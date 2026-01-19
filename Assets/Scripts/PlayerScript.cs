@@ -7,6 +7,7 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] public float playerSpeed = 5f;
     [SerializeField] public string playerName = "Ragnar";
     [SerializeField] public float AttackSpeed = 1.5f;
+    [SerializeField] public float AttackPower = 100f;
     [SerializeField] public bool isAlive = true;
 
     [Header("Movement Settings")]
@@ -45,6 +46,9 @@ public class PlayerScript : MonoBehaviour
         // Apply movement to the player's position
         transform.Translate(Vector3.right * moveInput * currentSpeed * Time.deltaTime);
         Debug.Log($"{playerName} is moving at speed {currentSpeed}.");
+
+        // 4. DAMAGE LOGIC
+        PlayerDamage();
     }
 
     void PlayerAlive()
@@ -71,5 +75,22 @@ public class PlayerScript : MonoBehaviour
             currentSpeed = playerSpeed;
         }
 
+    }
+    void PlayerDamage()
+    {           
+        // Placeholder for damage logic
+
+        if (isAlive == false)
+        {
+            return; // Exit if player is dead
+        }
+    }
+    void PlayerInteract()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            Debug.Log($"{playerName} is interacting with an object.");
+        }
+        // Placeholder for interaction logic
     }
 }
