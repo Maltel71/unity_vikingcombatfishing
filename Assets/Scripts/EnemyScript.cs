@@ -11,15 +11,24 @@ public class EnemyScript : MonoBehaviour
     public string gnomeName;
 
     [Header("Combat Settings")]
-
-    public float attackSpeed = 1.0f; // Attacks per second
-    private float nextAttackTime = 0f; // Cooldown timer
+    public float attackSpeed = 1.0f;
+    private float nextAttackTime = 0f;
 
     [Header("Movement Settings")]
     public float movementSpeed;
     private Transform playerTransform;
+
+    // --- ADDED FOR WAVE SYSTEM ---
+    [Header("Wave System Connection")]
+    public EndlessWaveManager manager;
+    // ------------------------------
+
     void Start()
     {
+        // Find the player by tag
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null) playerTransform = playerObj.transform;
+
         switch (type)
         {
             case GnomeType.Garden:
@@ -40,34 +49,62 @@ public class EnemyScript : MonoBehaviour
                 damage = 20;
                 movementSpeed = 0.3f;
                 break;
-
         }
-
     }
-    private void OnCollisionEnter(Collision collision)
+
+    // --- ADDED MOVEMENT LOGIC ---
+    void Update()
     {
-        // Check if the object hit has the PlayerScript attached
+        if (playerTransform != null)
+        {
+            // Move toward the player position
+            Vector3 direction = (playerTransform.position - transform.position).normalized;
+            direction.y = 0; // Keep gnomes on the ground
+            transform.position += direction * movementSpeed * Time.deltaTime;
+
+            // Look at the player
+            if (direction != Vector3.zero) transform.forward = direction;
+        }
+    }
+    // ----------------------------
+
+    // --- ADDED DAMAGE LOGIC ---
+    public void TakeDamage(int amount)
+    {
+        health -= amount;
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        if (manager != null)
+        {
+            manager.OnGnomeKilled(); // Tells the wave manager to count the death
+        }
+        Destroy(gameObject);
+    }
+    // ----------------------------
+
+    private void OnCollisionStay(Collision collision)
+    {
         PlayerScript player = collision.gameObject.GetComponent<PlayerScript>();
 
         if (player != null)
         {
-            // Only damage if enough time has passed (Attack Speed Logic)
             if (Time.time >= nextAttackTime)
             {
                 Attack(player);
-                // Calculate next available attack time
                 nextAttackTime = Time.time + (1f / attackSpeed);
-                Debug.Log(gnomeName + " attacked for " + damage + " damage!");
-                player.TakeDamage(damage);
             }
-           
-            void Attack(PlayerScript player)
-            {
-                Debug.Log($"{gnomeName} hits you for {damage} damage!");
-                player.TakeDamage(damage);
-            }
-
-           
         }
+    }
+
+    void Attack(PlayerScript player)
+    {
+        Debug.Log($"{gnomeName} hits you for {damage} damage!");
+        player.TakeDamage(damage);
     }
 }
