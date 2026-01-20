@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6762347399032843081}
   - component: {fileID: 2459713942329654352}
+  - component: {fileID: -9218514623772940608}
   m_Layer: 0
   m_Name: Gnome_Buff
   m_TagString: Untagged
@@ -90,3 +91,22 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &-9218514623772940608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5845258170561036127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 376547db7b1498a4084eb238fee05dfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyScript
+  type: 1
+  damage: 0
+  health: 0
+  gnomeName: 
+  attackSpeed: 1
+  movementSpeed: 0
+  manager: {fileID: 0}

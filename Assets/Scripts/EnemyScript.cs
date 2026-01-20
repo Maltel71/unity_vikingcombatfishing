@@ -25,9 +25,20 @@ public class EnemyScript : MonoBehaviour
 
     void Start()
     {
-        // Find the player by tag
+        // Search for the object tagged "Player"
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
-        if (playerObj != null) playerTransform = playerObj.transform;
+
+        if (playerObj != null)
+        {
+            playerTransform = playerObj.transform;
+        }
+        else
+        {
+            Debug.LogError("Gnome cannot find Ragnar! Is he tagged as 'Player'?");
+        }
+
+        // Find the player by tag
+       
 
         switch (type)
         {
@@ -55,16 +66,34 @@ public class EnemyScript : MonoBehaviour
     // --- ADDED MOVEMENT LOGIC ---
     void Update()
     {
+
+        if (playerTransform == null)
+        {
+            Debug.LogWarning("Gnome is lost! It can't find anything with the 'Player' tag.");
+        }
+        else
+        {
+            Debug.Log("Gnome is chasing " + playerTransform.name);
+        }
+
         if (playerTransform != null)
         {
-            // Move toward the player position
+            // 2. Calculate the direction to Ragnar
             Vector3 direction = (playerTransform.position - transform.position).normalized;
-            direction.y = 0; // Keep gnomes on the ground
+
+            // 3. Lock the Y axis so gnomes don't fly or sink into the floor
+            direction.y = 0;
+
+            // 4. Move the gnome forward
             transform.position += direction * movementSpeed * Time.deltaTime;
 
-            // Look at the player
-            if (direction != Vector3.zero) transform.forward = direction;
+            // 5. Rotate the gnome to face Ragnar
+            if (direction != Vector3.zero)
+            {
+                transform.forward = direction;
+            }
         }
+
     }
     // ----------------------------
 
@@ -72,6 +101,7 @@ public class EnemyScript : MonoBehaviour
     public void TakeDamage(int amount)
     {
         health -= amount;
+
         if (health <= 0)
         {
             Die();

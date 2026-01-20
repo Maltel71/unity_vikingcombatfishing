@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3386869536038097931}
   - component: {fileID: 5648233527619460818}
+  - component: {fileID: -387859848259606753}
   m_Layer: 0
   m_Name: Troll_Villager1
   m_TagString: Untagged
@@ -90,3 +91,22 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &-387859848259606753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1962205937763682007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 376547db7b1498a4084eb238fee05dfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyScript
+  type: 2
+  damage: 0
+  health: 0
+  gnomeName: 
+  attackSpeed: 1
+  movementSpeed: 0
+  manager: {fileID: 0}
