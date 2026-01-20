@@ -7,7 +7,7 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] public float playerSpeed = 5f;
     [SerializeField] public string playerName = "Ragnar";
     [SerializeField] public float AttackSpeed = 1.5f;
-    [SerializeField] public float AttackPower = 10f; // Adjusted for balance
+    [SerializeField] public float AttackPower = 100f; 
     [SerializeField] public bool isAlive = true;
 
     [Header("Movement Settings")]
@@ -69,7 +69,7 @@ public class PlayerScript : MonoBehaviour
 
     void HandleAttack()
     {
-        // Left Mouse Button to attack
+        // Space to attack
         if (Input.GetKeyDown(KeyCode.Space) && Time.time >= nextAttackTime)
         {
             Debug.Log($"{playerName} swings his weapon with the Spacebar!");
@@ -84,7 +84,7 @@ public class PlayerScript : MonoBehaviour
 
     void CheckForEnemyHit()
     {
-        // Simple 2026 Raycast to hit Gnomes in front of you
+        // Raycast to hit Gnomes in front of you
         RaycastHit hit;
         if (Physics.Raycast(transform.position, transform.forward, out hit, 2f))
         {

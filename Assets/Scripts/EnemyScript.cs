@@ -7,6 +7,7 @@ public class EnemyScript : MonoBehaviour
     [Header("Gnome Settings")]
     public GnomeType type;
     public int damage;
+    public int health;
     public string gnomeName;
 
     [Header("Combat Settings")]
@@ -23,16 +24,19 @@ public class EnemyScript : MonoBehaviour
         {
             case GnomeType.Garden:
                 gnomeName = "C_Common_Gnome";
+                health = 100;
                 damage = 10;
                 movementSpeed = 0.5f;
                 break;
             case GnomeType.Berserker:
                 gnomeName = "C_Berserker_Gnome";
+                health = 50;
                 damage = 5;
                 movementSpeed = 1.5f;
                 break;
             case GnomeType.Brute:
                 gnomeName = "C_Brute_Gnome";
+                health = 150;
                 damage = 20;
                 movementSpeed = 0.3f;
                 break;
