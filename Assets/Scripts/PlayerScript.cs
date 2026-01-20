@@ -12,6 +12,7 @@ public class PlayerScript : MonoBehaviour
 
     [Header("Movement Settings")]
     private float moveInput;
+    private bool facingRight = true; // Tracks which way Ragnar is facing
 
     [Header("Ducking Settings")]
     [SerializeField] public bool DuckMode = false;
@@ -38,31 +39,50 @@ public class PlayerScript : MonoBehaviour
         HandleDuck();
         HandleAttack();
         PlayerInteract();
+        
     }
 
     void HandleMovement()
     {
         moveInput = Input.GetAxis("Horizontal");
-        transform.Translate(Vector3.right * moveInput * currentSpeed * Time.deltaTime);
 
+        //Apply Movement
+        transform.Translate(Vector3.right * moveInput * currentSpeed * Time.deltaTime, Space.World);
+
+        //Flip Logic 
+        if (moveInput > 0 && !facingRight) 
+    {
+        FlipCharacter(); // If moving right but looking left, flip!
+            Debug.Log("Flipped Right");
+        }
+    else if (moveInput < 0 && facingRight) 
+    {
+        FlipCharacter(); // If moving left but looking right, flip!
+            Debug.Log("Flipped Left");
+        }
+             
+       
         // Only Log if moving to avoid console spam
         if (moveInput != 0)
             Debug.Log($"{playerName} is moving.");
     }
 
+
     void HandleDuck()
     {
-        // Use Input.GetKey (not Down) so it stays ducked while holding the key
         if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.LeftControl))
         {
             DuckMode = true;
-            transform.localScale = new Vector3(originalScale.x, originalScale.y * duckHeightScale, originalScale.z);
+            // HIGHLIGHTED CHANGE: Keep the current X scale when ducking
+            transform.localScale = new Vector3(transform.localScale.x, originalScale.y * duckHeightScale, originalScale.z);
             currentSpeed = DuckingSpeed;
+            Debug.Log($"{playerName} is ducking.");
         }
         else
         {
             DuckMode = false;
-            transform.localScale = originalScale;
+            // HIGHLIGHTED CHANGE: Keep the current X scale when standing back up
+            transform.localScale = new Vector3(transform.localScale.x, originalScale.y, originalScale.z);
             currentSpeed = playerSpeed;
         }
     }
@@ -124,5 +144,13 @@ public class PlayerScript : MonoBehaviour
             Debug.Log(playerName + " is attempting to interact...");
         }
     }
+    void FlipCharacter()
+    {
+        facingRight = !facingRight;
+        Vector3 currentScale = transform.localScale;
+        currentScale.x *= -1;
+        transform.localScale = currentScale;
+    }
+
 }
 
