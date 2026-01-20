@@ -2,19 +2,68 @@ using UnityEngine;
 
 public class EnemyScript : MonoBehaviour
 {
-    [SerializeField] public int enemyHealth = 100;
-    [SerializeField] public float enemySpeed = 3.5f;
-    [SerializeField] public string enemyName = "Gnome";
-    [SerializeField] public float AttackPower = 10f;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public enum GnomeType { Garden, Berserker, Brute }
+
+    [Header("Gnome Settings")]
+    public GnomeType type;
+    public int damage;
+    public string gnomeName;
+
+    [Header("Combat Settings")]
+
+    public float attackSpeed = 1.0f; // Attacks per second
+    private float nextAttackTime = 0f; // Cooldown timer
+
+    [Header("Movement Settings")]
+    public float movementSpeed;
+    private Transform playerTransform;
     void Start()
     {
-        
-    }
+        switch (type)
+        {
+            case GnomeType.Garden:
+                gnomeName = "C_Common_Gnome";
+                damage = 10;
+                movementSpeed = 0.5f;
+                break;
+            case GnomeType.Berserker:
+                gnomeName = "C_Berserker_Gnome";
+                damage = 5;
+                movementSpeed = 1.5f;
+                break;
+            case GnomeType.Brute:
+                gnomeName = "C_Brute_Gnome";
+                damage = 20;
+                movementSpeed = 0.3f;
+                break;
 
-    // Update is called once per frame
-    void Update()
+        }
+
+    }
+    private void OnCollisionEnter(Collision collision)
     {
-        
+        // Check if the object hit has the PlayerScript attached
+        PlayerScript player = collision.gameObject.GetComponent<PlayerScript>();
+
+        if (player != null)
+        {
+            // Only damage if enough time has passed (Attack Speed Logic)
+            if (Time.time >= nextAttackTime)
+            {
+                Attack(player);
+                // Calculate next available attack time
+                nextAttackTime = Time.time + (1f / attackSpeed);
+                Debug.Log(gnomeName + " attacked for " + damage + " damage!");
+                player.TakeDamage(damage);
+            }
+           
+            void Attack(PlayerScript player)
+            {
+                Debug.Log($"{gnomeName} hits you for {damage} damage!");
+                player.TakeDamage(damage);
+            }
+
+           
+        }
     }
 }

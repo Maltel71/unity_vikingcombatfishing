@@ -7,90 +7,122 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] public float playerSpeed = 5f;
     [SerializeField] public string playerName = "Ragnar";
     [SerializeField] public float AttackSpeed = 1.5f;
-    [SerializeField] public float AttackPower = 100f;
+    [SerializeField] public float AttackPower = 10f; // Adjusted for balance
     [SerializeField] public bool isAlive = true;
 
     [Header("Movement Settings")]
-    private float moveInput; // Our movement variable
+    private float moveInput;
 
     [Header("Ducking Settings")]
     [SerializeField] public bool DuckMode = false;
-    [SerializeField] public float DuckingSpeed = 2f; // float for smoother movement
-    [SerializeField] public float duckHeightScale = 0.5f; // How short the player gets
+    [SerializeField] public float DuckingSpeed = 2f;
+    [SerializeField] public float duckHeightScale = 0.5f;
+
+    [Header("Combat Settings")]
+    private float nextAttackTime = 0f;
 
     private Vector3 originalScale;
     private float currentSpeed;
 
-
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // Store the starting size of the player
         originalScale = transform.localScale;
         currentSpeed = playerSpeed;
-
     }
 
-    // Update is called once per frame
     void Update()
     {
-        // 3. DUCKING LOGIC
+        if (!isAlive) return; // Stop logic if Ragnar is dead
+
+        HandleMovement();
         HandleDuck();
-        // 2. CHECK IF PLAYER IS ALIVE
-        PlayerAlive();
-        // 3. MOVEMENT LOGIC
-        // Get horizontal movement (A = -1, D = 1)
+        HandleAttack();
+        PlayerInteract();
+    }
+
+    void HandleMovement()
+    {
         moveInput = Input.GetAxis("Horizontal");
-
-        // Apply movement to the player's position
         transform.Translate(Vector3.right * moveInput * currentSpeed * Time.deltaTime);
-        Debug.Log($"{playerName} is moving at speed {currentSpeed}.");
 
-        // 4. DAMAGE LOGIC
-        PlayerDamage();
+        // Only Log if moving to avoid console spam
+        if (moveInput != 0)
+            Debug.Log($"{playerName} is moving.");
     }
 
-    void PlayerAlive()
-    {         if (playerHealth <= 0)
-        {
-            isAlive = false;
-            Debug.Log($"{playerName} has perished in battle.");
-        }
-    }
     void HandleDuck()
     {
-        if (Input.GetKeyDown(KeyCode.S))
+        // Use Input.GetKey (not Down) so it stays ducked while holding the key
+        if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.LeftControl))
         {
             DuckMode = true;
-            // Reduce speed when ducking
             transform.localScale = new Vector3(originalScale.x, originalScale.y * duckHeightScale, originalScale.z);
             currentSpeed = DuckingSpeed;
-            
         }
         else
         {
             DuckMode = false;
-            //Return to normal size and speed
+            transform.localScale = originalScale;
             currentSpeed = playerSpeed;
         }
-
     }
-    void PlayerDamage()
-    {           
-        // Placeholder for damage logic
 
-        if (isAlive == false)
+    void HandleAttack()
+    {
+        // Left Mouse Button to attack
+        if (Input.GetKeyDown(KeyCode.Space) && Time.time >= nextAttackTime)
         {
-            return; // Exit if player is dead
+            Debug.Log($"{playerName} swings his weapon with the Spacebar!");
+
+            // Apply Attack Speed cooldown
+            nextAttackTime = Time.time + (1f / AttackSpeed);
+
+            // Logic to check if an enemy is hit
+            CheckForEnemyHit();
         }
     }
+
+    void CheckForEnemyHit()
+    {
+        // Simple 2026 Raycast to hit Gnomes in front of you
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, 2f))
+        {
+            if (hit.collider.CompareTag("Gnome"))
+            {
+                // If the Gnome has a script, you can damage it here
+                Debug.Log("Hit a Gnome!");
+            }
+        }
+    }
+
+    public void TakeDamage(int damage)
+    {
+        if (!isAlive || damage <= 0) return;
+
+        playerHealth -= damage;
+        Debug.Log($"{playerName} took {damage} damage! HP: {playerHealth}");
+
+        if (playerHealth <= 0)
+        {
+            playerHealth = 0;
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        isAlive = false;
+        Debug.Log($"{playerName} has perished in battle.");
+        // Disable movement or trigger animation here
+    }
+
     void PlayerInteract()
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            Debug.Log($"{playerName} is interacting with an object.");
+            Debug.Log(playerName + " is attempting to interact...");
         }
-        // Placeholder for interaction logic
     }
 }
+
