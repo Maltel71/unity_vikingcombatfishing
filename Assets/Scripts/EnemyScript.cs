@@ -46,7 +46,7 @@ public class EnemyScript : MonoBehaviour
                 gnomeName = "C_Common_Gnome";
                 health = 100;
                 damage = 10;
-                movementSpeed = 0.5f;
+                movementSpeed = 0.3f;
                 break;
             case GnomeType.Berserker:
                 gnomeName = "C_Berserker_Gnome";
@@ -87,11 +87,7 @@ public class EnemyScript : MonoBehaviour
             // 4. Move the gnome forward
             transform.position += direction * movementSpeed * Time.deltaTime;
 
-            // 5. Rotate the gnome to face Ragnar
-            if (direction != Vector3.zero)
-            {
-                transform.forward = direction;
-            }
+           
         }
 
     }
