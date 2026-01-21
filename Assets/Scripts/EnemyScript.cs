@@ -73,7 +73,7 @@ public class EnemyScript : MonoBehaviour
         }
         else
         {
-            Debug.Log("Gnome is chasing " + playerTransform.name);
+           // Debug.Log("Gnome is chasing " + playerTransform.name);
         }
 
         if (playerTransform != null)
@@ -114,22 +114,34 @@ public class EnemyScript : MonoBehaviour
     }
     // ----------------------------
 
-    private void OnCollisionStay(Collision collision)
+    private void OnCollisionStay2D(Collision2D collision)
     {
-        PlayerScript player = collision.gameObject.GetComponent<PlayerScript>();
+       
 
-        if (player != null)
+       if (collision.gameObject.CompareTag("Player"))
         {
-            if (Time.time >= nextAttackTime)
+            PlayerScript player = collision.gameObject.GetComponent<PlayerScript>();
+
+            if (player != null)
             {
-                Attack(player);
-                nextAttackTime = Time.time + (1f / attackSpeed);
+
+                //Cooldown Logic for Attacks
+                if (Time.time >= nextAttackTime)
+                {
+                    Attack(player);
+                    // Set the next attack time based on attack speed
+                    nextAttackTime = Time.time + (1f / attackSpeed);
+                }
             }
+        
         }
     }
 
+    
+
     void Attack(PlayerScript player)
-    {
+    {  
+        
         Debug.Log($"{gnomeName} hits you for {damage} damage!");
         player.TakeDamage(damage);
     }

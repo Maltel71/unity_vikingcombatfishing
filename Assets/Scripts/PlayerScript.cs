@@ -127,6 +127,7 @@ public class PlayerScript : MonoBehaviour
         {
             playerHealth = 0;
             Die();
+            
         }
     }
 
@@ -135,6 +136,7 @@ public class PlayerScript : MonoBehaviour
         isAlive = false;
         Debug.Log($"{playerName} has perished in battle.");
         // Disable movement or trigger animation here
+        Destroy(gameObject, 1f);
     }
 
     void PlayerInteract()
