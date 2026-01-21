@@ -13,7 +13,7 @@ public class EndlessWaveManager : MonoBehaviour
 
     [Header("Scaling Variables")]
     public int enemiesPerWaveBase = 5;
-    public float difficultyMultiplier = 1.2f; // Enemies increase by 20% each wave
+    public float difficultyMultiplier = 1.05f; // Enemies increase by 20% each wave
 
     private int enemiesToSpawn;
     private int enemiesRemaining;
