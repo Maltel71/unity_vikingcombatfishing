@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.Timeline;
 
 public class PlayerScript : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] public int playerScore = 0;   // NYTT: Poäng
     [SerializeField] public float playerSpeed = 5f;
     [SerializeField] public string playerName = "Ragnar";
-    [SerializeField] public float AttackSpeed = 1.5f;
+    [SerializeField] public float AttackSpeed = 0.1f;
     [SerializeField] public float AttackPower = 100f;
     [SerializeField] public bool isAlive = true;
 
@@ -21,7 +22,9 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] public float DuckingSpeed = 2f;
     [SerializeField] public float duckHeightScale = 0.5f;
 
-    [Header("Combat Settings")]
+    [Header("2D Combat Settings")]
+    public float attackRange = 1.2f;
+    public float attackOffset = 1.0f;
     private float nextAttackTime = 0f;
 
     private Vector3 originalScale;
@@ -106,17 +109,37 @@ public class PlayerScript : MonoBehaviour
 
     void CheckForEnemyHit()
     {
-        // Raycast to hit Gnomes in front of you
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, 2f))
-        {
-            if (hit.collider.CompareTag("Gnome"))
+        // 1. Calculate attack position based on which way Ragnar faces (Scale X)
+        float faceDir = transform.localScale.x > 0 ? 1 : -1;
+        Vector2 attackPoint = (Vector2)transform.position + new Vector2(faceDir * attackOffset, 0);
+
+        // 2. HIGHLIGHT: Use Physics2D.OverlapCircleAll for 2D sprites
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint, attackRange);
+
+       
+            foreach (Collider2D hit in hitEnemies)
             {
-                // If the Gnome has a script, you can damage it here
-                Debug.Log("Hit a Gnome!");
+                // HIGHLIGHTED CHANGE: Change "Gnome" to "Enemy"
+                if (hit.CompareTag("Enemy"))
+                {
+                    EnemyScript enemy = hit.GetComponent<EnemyScript>();
+                    if (enemy != null)
+                    {
+                        enemy.TakeDamage((int)AttackPower);
+                        Debug.Log("Hit an enemy for " + AttackPower + " damage!");
+                    }
+                }
             }
-        }
     }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        float faceDir = transform.localScale.x > 0 ? 1 : -1;
+        Vector2 attackPoint = (Vector2)transform.position + new Vector2(faceDir * attackOffset, 0);
+        Gizmos.DrawWireSphere(attackPoint, attackRange);
+    }
+
 
     public void TakeDamage(int damage)
     {

@@ -44,21 +44,21 @@ public class EnemyScript : MonoBehaviour
         {
             case GnomeType.Garden:
                 gnomeName = "C_Common_Gnome";
-                health = 100;
+                health = 5;
                 damage = 10;
                 movementSpeed = 0.3f;
                 break;
             case GnomeType.Berserker:
                 gnomeName = "C_Berserker_Gnome";
-                health = 50;
+                health = 100;
                 damage = 5;
                 movementSpeed = 1.5f;
                 break;
             case GnomeType.Brute:
                 gnomeName = "C_Brute_Gnome";
-                health = 150;
+                health = 200;
                 damage = 20;
-                movementSpeed = 0.3f;
+                movementSpeed = 0.1f;
                 break;
         }
     }

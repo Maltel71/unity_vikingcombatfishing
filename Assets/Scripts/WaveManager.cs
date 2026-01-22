@@ -1,21 +1,18 @@
 using UnityEngine;
 using System.Collections;
-// Add this if GnomeEnemy is in another namespace, e.g. MyGame.Enemies
-// using MyGame.Enemies;
 
 public class EndlessWaveManager : MonoBehaviour
 {
     [Header("Wave Settings")]
     public int currentWave = 1;
-    public float timeBetweenWaves = 5f;
-    public GameObject[] gnomePrefabs; // Your different Gnome types
+    public float timeBetweenWaves = 10f;
+    public GameObject[] gnomePrefabs;
     public Transform[] spawnPoints;
 
-    [Header("Scaling Variables")]
-    public int enemiesPerWaveBase = 5;
-    public float difficultyMultiplier = 1.05f; // Enemies increase by 20% each wave
+    [Header("Static Scaling")]
+    // Set this to 5 in the Inspector to lock every round to 5 enemies
+    public int enemiesPerWaveFixed = 5;
 
-    private int enemiesToSpawn;
     private int enemiesRemaining;
     private bool isSpawning = false;
 
@@ -26,7 +23,6 @@ public class EndlessWaveManager : MonoBehaviour
 
     void Update()
     {
-        // Start next wave if all gnomes are dead and we aren't spawning
         if (enemiesRemaining <= 0 && !isSpawning)
         {
             StartCoroutine(WaveDelay());
@@ -35,8 +31,8 @@ public class EndlessWaveManager : MonoBehaviour
 
     IEnumerator WaveDelay()
     {
-        isSpawning = true; // Prevents multiple calls
-        Debug.Log("Wave Cleared! Next wave in " + timeBetweenWaves + " seconds.");
+        isSpawning = true;
+        Debug.Log($"Wave {currentWave} Cleared! Next wave in {timeBetweenWaves} seconds.");
         yield return new WaitForSeconds(timeBetweenWaves);
 
         currentWave++;
@@ -45,41 +41,41 @@ public class EndlessWaveManager : MonoBehaviour
 
     void StartNextWave()
     {
-        // COD ZOMBIES FORMULA: Scale enemy count based on wave number
-        enemiesToSpawn = Mathf.RoundToInt(enemiesPerWaveBase * Mathf.Pow(currentWave, difficultyMultiplier));
-        enemiesRemaining = enemiesToSpawn;
+        // Removed exponential math. Now always spawns 5.
+        enemiesRemaining = enemiesPerWaveFixed;
 
-        Debug.Log("Starting Wave " + currentWave + ". Gnomes to slay: " + enemiesToSpawn);
+        Debug.Log($"Starting Wave {currentWave}. Gnomes to slay: {enemiesRemaining}");
         StartCoroutine(SpawnRoutine());
     }
 
     IEnumerator SpawnRoutine()
     {
         isSpawning = true;
-        for (int i = 0; i < enemiesToSpawn; i++)
+        for (int i = 0; i < enemiesPerWaveFixed; i++)
         {
             SpawnGnome();
-            // Faster spawning in higher rounds
-            float spawnDelay = Mathf.Clamp(1.5f - (currentWave * 0.05f), 0.2f, 1.5f);
-            yield return new WaitForSeconds(spawnDelay);
+
+            // Fixed spawn delay (1.0s) so it doesn't get faster over time
+            yield return new WaitForSeconds(1.0f);
         }
         isSpawning = false;
     }
 
     void SpawnGnome()
     {
+        if (gnomePrefabs.Length == 0 || spawnPoints.Length == 0) return;
+
         int randomIndex = Random.Range(0, gnomePrefabs.Length);
         Transform sp = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
         GameObject newGnome = Instantiate(gnomePrefabs[randomIndex], sp.position, sp.rotation);
 
-        // Pass a reference so the Gnome can tell this script when it dies
-        GnomeEnemy gnomeScript = newGnome.GetComponent<GnomeEnemy>();
-        if (gnomeScript != null)
+        EnemyScript enemy = newGnome.GetComponent<EnemyScript>();
+        if (enemy != null)
         {
-            gnomeScript.SetWaveManager(this);
-            // SCALE ENEMY SPEED: Gnomes get faster every wave
-            gnomeScript.movementSpeed += (currentWave * 0.15f);
+            enemy.manager = this;
+            // Stat scaling (speed, health, damage) has been removed here 
+            // to ensure every round feels exactly the same.
         }
     }
 
