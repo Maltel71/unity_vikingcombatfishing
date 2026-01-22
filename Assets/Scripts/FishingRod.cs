@@ -11,6 +11,9 @@ public class FishingRod : MonoBehaviour
     public float minBiteTime = 10f;
     public float maxBiteTime = 30f;
 
+    [Header("Visual Effects")]
+    public ParticleSystem waterSplashEffect;
+
     [HideInInspector] public bool hasBite = false;
     [HideInInspector] public bool isWaitingForBite = false;
     [HideInInspector] public bool isReelingIn = false;
@@ -36,7 +39,7 @@ public class FishingRod : MonoBehaviour
     public AudioClip castSound;
     public AudioClip catchSound;
     private AudioSource audioSource;
-    public AudioClip[] gruntSounds; // New - array of grunt sounds
+    public AudioClip[] gruntSounds;
 
     [Header("Animation (Optional)")]
     public Animator playerAnimator;
@@ -96,11 +99,9 @@ public class FishingRod : MonoBehaviour
             }
         }
 
-        // Play random grunt sound periodically
-        if (!audioSource.isPlaying && gruntSounds.Length > 0)
+        if (isReelingIn && Input.GetKey(KeyCode.E))
         {
-            int randomIndex = Random.Range(0, gruntSounds.Length);
-            PlaySound(gruntSounds[randomIndex]);
+            reelInProgress += Time.deltaTime;
         }
 
         if (reelInProgress >= reelInDuration)
@@ -111,6 +112,13 @@ public class FishingRod : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.E) && isReelingIn)
         {
             LostFish();
+        }
+
+        // Play random grunt sound periodically
+        if (!audioSource.isPlaying && gruntSounds.Length > 0)
+        {
+            int randomIndex = Random.Range(0, gruntSounds.Length);
+            PlaySound(gruntSounds[randomIndex]);
         }
     }
 
@@ -177,6 +185,12 @@ public class FishingRod : MonoBehaviour
         }
 
         GameObject fish = Instantiate(fishPrefab, spawnPos, Quaternion.identity);
+
+        if (waterSplashEffect != null)
+        {
+            waterSplashEffect.transform.position = spawnPos;
+            waterSplashEffect.Play();
+        }
 
         Rigidbody2D rb = fish.GetComponent<Rigidbody2D>();
         if (rb == null)
@@ -248,72 +262,13 @@ public class FishingRod : MonoBehaviour
     {
         if (fishPile != null && waterSpawnPoint != null)
         {
-            // Rita linje från vatten till pile
             Gizmos.color = Color.cyan;
             Gizmos.DrawLine(waterSpawnPoint.position, fishPile.transform.position);
 
-            // Rita pile position
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(fishPile.transform.position, 0.5f);
 
-            // Skriv position info
             Gizmos.color = Color.white;
         }
     }
 }
-
-//using UnityEngine;
-//using System.Collections;
-//using System.Collections.Generic;
-
-//public class FishingRod : MonoBehaviour
-//{
-//    public List<GameObject> fishPrefabs; // Assign different fish prefabs here
-//    public int totalScore = 0;
-
-//    private bool isFishing = false;
-//    private float waitTime;
-
-//    void Update()
-//    {
-//        // Press F to start/stop fishing
-//        if (Input.GetKeyDown(KeyCode.F))
-//        {
-//            if (!isFishing) StartCoroutine(StartFishing());
-//            else StopFishing();
-//        }
-//    }
-
-//    IEnumerator StartFishing()
-//    {
-//        isFishing = true;
-//        Debug.Log("Casting line... waiting for a bite.");
-
-//        // Random wait time between 2 and 5 seconds for a bite
-//        waitTime = Random.Range(2f, 5f);
-//        yield return new WaitForSeconds(waitTime);
-
-//        CatchFish();
-//    }
-
-//    void CatchFish()
-//    {
-//        if (!isFishing) return;
-
-//        // Randomly select a fish from your list
-//        int randomIndex = Random.Range(0, fishPrefabs.Count);
-//        GameObject caughtPrefab = fishPrefabs[randomIndex];
-//        Fish fishData = caughtPrefab.GetComponent<Fish>();
-
-//        totalScore += fishData.scoreValue;
-//        Debug.Log($"Caught a {fishData.fishName}! +{fishData.scoreValue} points. Total Score: {totalScore}");
-
-//        StopFishing();
-//    }
-
-//    void StopFishing()
-//    {
-//        isFishing = false;
-//        Debug.Log("Line reeled in.");
-//    }
-//}

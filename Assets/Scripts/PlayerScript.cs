@@ -13,9 +13,13 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] public float AttackPower = 100f;
     [SerializeField] public bool isAlive = true;
 
+    [Header("Sound Effects")]
+    public AudioClip[] hurtSounds;
+    private AudioSource audioSource;
+
     [Header("Movement Settings")]
     private float moveInput;
-    private bool facingRight = true; // Tracks which way Ragnar is facing
+    private bool facingRight = true;
 
     [Header("Ducking Settings")]
     [SerializeField] public bool DuckMode = false;
@@ -34,6 +38,13 @@ public class PlayerScript : MonoBehaviour
     {
         originalScale = transform.localScale;
         currentSpeed = playerSpeed;
+
+        // Setup audio source
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     void Update()
@@ -151,11 +162,17 @@ public class PlayerScript : MonoBehaviour
         playerHealth -= damage;
         Debug.Log($"{playerName} took {damage} damage! HP: {playerHealth}");
 
+        // Play random hurt sound
+        if (hurtSounds.Length > 0 && audioSource != null)
+        {
+            int randomIndex = Random.Range(0, hurtSounds.Length);
+            audioSource.PlayOneShot(hurtSounds[randomIndex]);
+        }
+
         if (playerHealth <= 0)
         {
             playerHealth = 0;
             Die();
-
         }
     }
 
