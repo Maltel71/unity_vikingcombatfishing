@@ -15,7 +15,11 @@ public class PlayerScript : MonoBehaviour
 
     [Header("Sound Effects")]
     public AudioClip[] hurtSounds;
+    public AudioClip swordSwooshSound;
+    public AudioClip enemyHitSound;
     public float hurtSoundVolume = 1f;
+    [Range(0f, 1f)]
+    public float attackSoundVolume = 1f;
     private AudioSource audioSource;
 
     [Header("Visual Effects")]
@@ -115,15 +119,17 @@ public class PlayerScript : MonoBehaviour
 
     void HandleAttack()
     {
-        // Space to attack
         if (Input.GetKeyDown(KeyCode.Space) && Time.time >= nextAttackTime)
         {
             Debug.Log($"{playerName} swings his weapon with the Spacebar!");
 
-            // Apply Attack Speed cooldown
-            nextAttackTime = Time.time + (1f / AttackSpeed);
+            // Play sword swoosh sound
+            if (swordSwooshSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(swordSwooshSound, attackSoundVolume);
+            }
 
-            // Logic to check if an enemy is hit
+            nextAttackTime = Time.time + (1f / AttackSpeed);
             CheckForEnemyHit();
         }
     }
@@ -143,8 +149,15 @@ public class PlayerScript : MonoBehaviour
                 if (enemy != null)
                 {
                     enemy.TakeDamage((int)AttackPower);
+
+                    // Play enemy hit sound
+                    if (enemyHitSound != null && audioSource != null)
+                    {
+                        audioSource.PlayOneShot(enemyHitSound, attackSoundVolume);
+                    }
+
                     Debug.Log("Hit an enemy for " + AttackPower + " damage!");
-                    break; // Only hit ONE enemy per attack
+                    break;
                 }
             }
         }
