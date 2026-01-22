@@ -24,8 +24,14 @@ public class PlayerScript : MonoBehaviour
     [Header("Combat Settings")]
     private float nextAttackTime = 0f;
 
+    [Header(" 2D Attack Settings")]
+    [SerializeField] public float attackRange = 1.5f; // How far the swing reaches
+    [SerializeField] public LayerMask enemyLayer;    // Optional: Set this to "Default" or "Enemy" in the Inspector
+   
     private Vector3 originalScale;
     private float currentSpeed;
+
+    
 
     void Start()
     {
@@ -106,18 +112,35 @@ public class PlayerScript : MonoBehaviour
 
     void CheckForEnemyHit()
     {
-        // Raycast to hit Gnomes in front of you
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, 2f))
+       Vector2 attackDirection = transform.right * (transform.localScale.x > 0 ? 1 : -1);
+         Vector2 attackPoint = (Vector2)transform.position + attackDirection * 1f; // 1f is the distance in front of the player
+
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint, attackRange, enemyLayer);
+
+        foreach (Collider2D hit in hitEnemies)
         {
-            if (hit.collider.CompareTag("Gnome"))
+
+            if (hit.CompareTag("Enemy"))
             {
-                // If the Gnome has a script, you can damage it here
-                Debug.Log("Hit a Gnome!");
+                EnemyScript enemy = hit.GetComponent<EnemyScript>();
+                if (enemy != null)
+                {
+                    enemy.TakeDamage((int)AttackPower);
+                    Debug.Log($"{playerName} hit {enemy.gnomeName} for {AttackPower} damage!");
+                }
             }
+            // Here you would call a method on the enemy to apply damage
+            // enemy.GetComponent<EnemyScript>().TakeDamage(AttackPower);
         }
     }
 
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Vector3 attackPoint = transform.position + transform.forward * 1f;
+        Gizmos.DrawWireSphere(attackPoint, attackRange);
+
+    }
     public void TakeDamage(int damage)
     {
         if (!isAlive || damage <= 0) return;

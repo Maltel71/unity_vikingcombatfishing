@@ -97,7 +97,7 @@ public class EnemyScript : MonoBehaviour
     public void TakeDamage(int amount)
     {
         health -= amount;
-
+        Debug.Log($"{gnomeName} now has {health} HP.");
         if (health <= 0)
         {
             Die();
@@ -109,6 +109,10 @@ public class EnemyScript : MonoBehaviour
         if (manager != null)
         {
             manager.OnGnomeKilled(); // Tells the wave manager to count the death
+        }
+        else
+        {
+                       Debug.LogWarning("Gnome died, but has no wave manager reference!");
         }
         Destroy(gameObject);
     }

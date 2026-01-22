@@ -73,12 +73,15 @@ public class EndlessWaveManager : MonoBehaviour
 
         GameObject newGnome = Instantiate(gnomePrefabs[randomIndex], sp.position, sp.rotation);
 
-        // Pass a reference so the Gnome can tell this script when it dies
-        GnomeEnemy gnomeScript = newGnome.GetComponent<GnomeEnemy>();
+        // CHANGE THIS: Match the name of your script (EnemyScript)
+        EnemyScript gnomeScript = newGnome.GetComponent<EnemyScript>();
+
         if (gnomeScript != null)
         {
-            gnomeScript.SetWaveManager(this);
-            // SCALE ENEMY SPEED: Gnomes get faster every wave
+            // This gives the Gnome the "Address" of this manager
+            gnomeScript.manager = this;
+
+            // Speed scaling
             gnomeScript.movementSpeed += (currentWave * 0.15f);
         }
     }
