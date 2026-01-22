@@ -19,6 +19,9 @@ public class FlyingFish : MonoBehaviour
     public Animator fishAnimator;
     public string landAnimationTrigger = "Land";
 
+    [Header("Pickup Settings")]
+    public Transform pickupRangeObject;
+
     [HideInInspector] public FishPile fishPile;
 
     private Rigidbody2D rb;
@@ -140,7 +143,19 @@ public class FlyingFish : MonoBehaviour
 
         if (fishCollider != null)
         {
-            fishCollider.isTrigger = true;
+            fishCollider.isTrigger = false;
+            fishCollider.enabled = false; // Disable main collider
+        }
+
+        // Enable the pickup range collider
+        if (pickupRangeObject != null)
+        {
+            Collider2D pickupCollider = pickupRangeObject.GetComponent<Collider2D>();
+            if (pickupCollider != null)
+            {
+                pickupCollider.enabled = true;
+                pickupCollider.isTrigger = true;
+            }
         }
 
         if (fishAnimator != null && !string.IsNullOrEmpty(landAnimationTrigger))

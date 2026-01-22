@@ -20,8 +20,10 @@ public class FishingRod : MonoBehaviour
     public float reelInDuration = 3f;
 
     [Header("Kast Settings")]
-    public float upwardForce = 20f;
-    public float horizontalForce = 15f;
+    public float minUpwardForce = 15f;
+    public float maxUpwardForce = 25f;
+    public float minHorizontalForce = 10f;
+    public float maxHorizontalForce = 20f;
     public Transform waterSpawnPoint;
 
     [Header("References")]
@@ -34,11 +36,15 @@ public class FishingRod : MonoBehaviour
     public AudioClip castSound;
     public AudioClip catchSound;
     private AudioSource audioSource;
+    public AudioClip[] gruntSounds; // New - array of grunt sounds
 
     [Header("Animation (Optional)")]
     public Animator playerAnimator;
     public string fishingAnimTrigger = "StartFishing";
     public string catchAnimTrigger = "CatchFish";
+
+    [Header("Pickup Settings")]
+    public Transform pickupRangeObject;
 
     private Coroutine biteCoroutine;
 
@@ -90,14 +96,16 @@ public class FishingRod : MonoBehaviour
             }
         }
 
-        if (Input.GetKey(KeyCode.E) && isReelingIn)
+        // Play random grunt sound periodically
+        if (!audioSource.isPlaying && gruntSounds.Length > 0)
         {
-            reelInProgress += Time.deltaTime;
+            int randomIndex = Random.Range(0, gruntSounds.Length);
+            PlaySound(gruntSounds[randomIndex]);
+        }
 
-            if (reelInProgress >= reelInDuration)
-            {
-                CatchFish();
-            }
+        if (reelInProgress >= reelInDuration)
+        {
+            CatchFish();
         }
 
         if (Input.GetKeyUp(KeyCode.E) && isReelingIn)
@@ -123,6 +131,16 @@ public class FishingRod : MonoBehaviour
     {
         isReelingIn = true;
         reelInProgress = 0f;
+
+        if (playerTransform != null)
+        {
+            Vector3 scale = playerTransform.localScale;
+            if (scale.x < 0)
+            {
+                scale.x *= -1;
+                playerTransform.localScale = scale;
+            }
+        }
     }
 
     void CatchFish()
@@ -167,44 +185,22 @@ public class FishingRod : MonoBehaviour
             rb.gravityScale = 2f;
         }
 
-        // Hitta målposition
-        Vector3 targetPos;
-        if (fishPile != null)
-        {
-            targetPos = fishPile.transform.position;
-        }
-        else
-        {
-            targetPos = playerTransform.position + Vector3.right * 3f;
-        }
+        // Random force values
+        float randomUpwardForce = Random.Range(minUpwardForce, maxUpwardForce);
+        float randomHorizontalForce = Random.Range(minHorizontalForce, maxHorizontalForce);
 
-        // Beräkna horizontal riktning
-        float horizontalDirection = targetPos.x - spawnPos.x;
+        // Use waterSpawnPoint's rotation to determine direction
+        Vector2 direction = waterSpawnPoint.right;
 
-        // VIKTIGT: Om FishPile är direkt över vattnet (nästan 0), tvinga åt höger!
-        if (Mathf.Abs(horizontalDirection) < 0.5f)
-        {
-            Debug.LogWarning("⚠️ FishPile är nästan direkt över vattnet! Tvingar horizontal kraft åt höger.");
-            horizontalDirection = 1f; // Tvinga åt höger
-        }
-        else
-        {
-            // Normalisera riktningen
-            horizontalDirection = Mathf.Sign(horizontalDirection);
-        }
-
-        // Skapa force vektor
         Vector2 force = new Vector2(
-            horizontalDirection * horizontalForce,  // Åt sidan (garanterat != 0)
-            upwardForce                              // Uppåt
+            direction.x * randomHorizontalForce,
+            randomUpwardForce
         );
 
         rb.AddForce(force, ForceMode2D.Impulse);
 
         Debug.Log($"🚀 KASTA FISK:");
-        Debug.Log($"   Spawn: {spawnPos}");
-        Debug.Log($"   Target: {targetPos}");
-        Debug.Log($"   Horizontal riktning: {horizontalDirection}");
+        Debug.Log($"   Direction from rotation: {direction}");
         Debug.Log($"   Force: X={force.x}, Y={force.y}");
 
         FlyingFish flyingFish = fish.GetComponent<FlyingFish>();

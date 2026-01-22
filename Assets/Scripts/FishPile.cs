@@ -54,6 +54,12 @@ public class FishPile : MonoBehaviour
             col.enabled = false;
         }
 
+        FlyingFish flyingFish = fish.GetComponent<FlyingFish>();
+        if (flyingFish != null)
+        {
+            flyingFish.enabled = false;
+        }
+
         Debug.Log($"Fisk tillagd i h�gen! Total: {fishInPile.Count}");
     }
 

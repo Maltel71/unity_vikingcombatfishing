@@ -13,6 +13,7 @@ public class PlayerAnimationController : MonoBehaviour
     private const string REELING = "Ragnar_ReelingAnimate";
     private const string CATCH = "Ragnar_Catch_Animate";
     private const string DEATH = "DeathAnimeRagnar";
+    private const string DEATH_IDLE = "Ragnar_DeathIdleAnimate";
 
     private string currentState;
     private bool isPlayingAction = false; // Track if an action animation is playing
@@ -37,6 +38,23 @@ public class PlayerAnimationController : MonoBehaviour
     {
         if (animator == null) return;
 
+        // Handle death states
+        if (!playerScript.isAlive)
+        {
+            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+
+            // If death animation is playing and finished, switch to death idle
+            if (currentState == DEATH && stateInfo.normalizedTime >= 1.0f)
+            {
+                ChangeAnimationState(DEATH_IDLE);
+            }
+            else if (currentState != DEATH && currentState != DEATH_IDLE)
+            {
+                ChangeAnimationState(DEATH);
+            }
+            return;
+        }
+
         // Check if action animation has finished
         if (isPlayingAction)
         {
@@ -49,12 +67,6 @@ public class PlayerAnimationController : MonoBehaviour
             {
                 return; // Don't change animation while action is playing
             }
-        }
-
-        if (!playerScript.isAlive)
-        {
-            ChangeAnimationState(DEATH);
-            return;
         }
 
         // Fishing takes priority

@@ -49,6 +49,13 @@ public class PlayerScript : MonoBehaviour
 
     void HandleMovement()
     {
+        // Check if fishing rod exists and is reeling - disable movement
+        FishingRod fishingRod = GetComponentInChildren<FishingRod>();
+        if (fishingRod != null && fishingRod.isReelingIn)
+        {
+            return; // Skip movement entirely while reeling
+        }
+
         moveInput = Input.GetAxis("Horizontal");
 
         //Apply Movement
@@ -57,15 +64,14 @@ public class PlayerScript : MonoBehaviour
         //Flip Logic 
         if (moveInput > 0 && !facingRight)
         {
-            FlipCharacter(); // If moving right but looking left, flip!
+            FlipCharacter();
             Debug.Log("Flipped Right");
         }
         else if (moveInput < 0 && facingRight)
         {
-            FlipCharacter(); // If moving left but looking right, flip!
+            FlipCharacter();
             Debug.Log("Flipped Left");
         }
-
 
         // Only Log if moving to avoid console spam
         if (moveInput != 0)
@@ -171,8 +177,7 @@ public class PlayerScript : MonoBehaviour
     {
         isAlive = false;
         Debug.Log($"{playerName} has perished in battle.");
-        // Disable movement or trigger animation here
-        Destroy(gameObject, 1f);
+        // Don't destroy - let death animation play
     }
 
     void PlayerInteract()
