@@ -79,13 +79,13 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 10.24, y: 10.24}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
@@ -101,7 +101,7 @@ Animator:
   m_GameObject: {fileID: 5191545334795682151}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 4a1a39aae786ec54681ffd0d5096f197, type: 2}
+  m_Controller: {fileID: 9100000, guid: b7ac3510cfcedc140aa24d4d6fc34024, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -202,6 +202,7 @@ GameObject:
   - component: {fileID: 7855410422122446961}
   - component: {fileID: 7983686472564118329}
   - component: {fileID: 2903824015694416269}
+  - component: {fileID: 7538681369405482086}
   - component: {fileID: 7847707451783513498}
   - component: {fileID: 5329019485393523960}
   m_Layer: 0
@@ -299,6 +300,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerScript
   playerHealth: 100
+  maxHealth: 100
+  playerScore: 0
   playerSpeed: 5
   playerName: Ragnar
   AttackSpeed: 1.5
@@ -307,6 +310,20 @@ MonoBehaviour:
   DuckMode: 0
   DuckingSpeed: 2
   duckHeightScale: 0.5
+  attackRange: 1.2
+  attackOffset: 1
+--- !u!114 &7538681369405482086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450888661970128626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a636a0c3f5635f84292b42acb37941cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
 --- !u!61 &7847707451783513498
 BoxCollider2D:
   m_ObjectHideFlags: 0

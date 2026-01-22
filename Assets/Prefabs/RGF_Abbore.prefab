@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5394482421934542673}
   - component: {fileID: 5792712667036141565}
   - component: {fileID: 7390009231158237306}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: RGF_Abbore
   m_TagString: Untagged
   m_Icon: {fileID: 0}

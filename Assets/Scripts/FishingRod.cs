@@ -129,9 +129,10 @@ public class FishingRod : MonoBehaviour
     {
         PlaySound(catchSound);
 
-        if (playerAnimator != null && !string.IsNullOrEmpty(catchAnimTrigger))
+        PlayerAnimationController animController = playerTransform.GetComponent<PlayerAnimationController>();
+        if (animController != null)
         {
-            playerAnimator.SetTrigger(catchAnimTrigger);
+            animController.PlayCatch();
         }
 
         bool isPerch = Random.value < 0.6f;

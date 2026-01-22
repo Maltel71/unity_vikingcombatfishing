@@ -106,11 +106,38 @@ public class EnemyScript : MonoBehaviour
 
     void Die()
     {
+        // Hide sprite
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.enabled = false;
+        }
+
+        // Disable colliders
+        Collider2D[] colliders = GetComponents<Collider2D>();
+        foreach (Collider2D col in colliders)
+        {
+            col.enabled = false;
+        }
+
+        // Play blood particle system
+        ParticleSystem bloodParticle = GetComponentInChildren<ParticleSystem>();
+        if (bloodParticle != null)
+        {
+            bloodParticle.Play();
+
+            // Destroy after particle finishes
+            Destroy(gameObject, bloodParticle.main.duration);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
         if (manager != null)
         {
-            manager.OnGnomeKilled(); // Tells the wave manager to count the death
+            manager.OnGnomeKilled();
         }
-        Destroy(gameObject);
     }
     // ----------------------------
 

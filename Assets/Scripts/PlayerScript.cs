@@ -109,27 +109,24 @@ public class PlayerScript : MonoBehaviour
 
     void CheckForEnemyHit()
     {
-        // 1. Calculate attack position based on which way Ragnar faces (Scale X)
         float faceDir = transform.localScale.x > 0 ? 1 : -1;
         Vector2 attackPoint = (Vector2)transform.position + new Vector2(faceDir * attackOffset, 0);
 
-        // 2. HIGHLIGHT: Use Physics2D.OverlapCircleAll for 2D sprites
         Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint, attackRange);
 
-       
-            foreach (Collider2D hit in hitEnemies)
+        foreach (Collider2D hit in hitEnemies)
+        {
+            if (hit.CompareTag("Enemy"))
             {
-                // HIGHLIGHTED CHANGE: Change "Gnome" to "Enemy"
-                if (hit.CompareTag("Enemy"))
+                EnemyScript enemy = hit.GetComponent<EnemyScript>();
+                if (enemy != null)
                 {
-                    EnemyScript enemy = hit.GetComponent<EnemyScript>();
-                    if (enemy != null)
-                    {
-                        enemy.TakeDamage((int)AttackPower);
-                        Debug.Log("Hit an enemy for " + AttackPower + " damage!");
-                    }
+                    enemy.TakeDamage((int)AttackPower);
+                    Debug.Log("Hit an enemy for " + AttackPower + " damage!");
+                    break; // Only hit ONE enemy per attack
                 }
             }
+        }
     }
 
     void OnDrawGizmosSelected()

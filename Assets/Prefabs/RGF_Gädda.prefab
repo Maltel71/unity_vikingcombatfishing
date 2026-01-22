@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7823993896824925625}
   - component: {fileID: 1724425870834666971}
   - component: {fileID: 4576863037127722434}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: "RGF_G\xE4dda"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
