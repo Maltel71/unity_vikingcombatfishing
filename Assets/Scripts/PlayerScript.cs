@@ -15,7 +15,11 @@ public class PlayerScript : MonoBehaviour
 
     [Header("Sound Effects")]
     public AudioClip[] hurtSounds;
+    public float hurtSoundVolume = 1f;
     private AudioSource audioSource;
+
+    [Header("Visual Effects")]
+    public ParticleSystem bloodParticle;
 
     [Header("Movement Settings")]
     private float moveInput;
@@ -162,11 +166,17 @@ public class PlayerScript : MonoBehaviour
         playerHealth -= damage;
         Debug.Log($"{playerName} took {damage} damage! HP: {playerHealth}");
 
+        // Play blood particle effect
+        if (bloodParticle != null)
+        {
+            bloodParticle.Play();
+        }
+
         // Play random hurt sound
         if (hurtSounds.Length > 0 && audioSource != null)
         {
             int randomIndex = Random.Range(0, hurtSounds.Length);
-            audioSource.PlayOneShot(hurtSounds[randomIndex]);
+            audioSource.PlayOneShot(hurtSounds[randomIndex], hurtSoundVolume);
         }
 
         if (playerHealth <= 0)

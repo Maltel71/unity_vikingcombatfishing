@@ -40,6 +40,7 @@ public class FishingRod : MonoBehaviour
     public AudioClip catchSound;
     private AudioSource audioSource;
     public AudioClip[] gruntSounds;
+    public float gruntVolume = 1f;
 
     [Header("Animation (Optional)")]
     public Animator playerAnimator;
@@ -115,10 +116,10 @@ public class FishingRod : MonoBehaviour
         }
 
         // Play random grunt sound periodically
-        if (!audioSource.isPlaying && gruntSounds.Length > 0)
+        if (isReelingIn && !audioSource.isPlaying && gruntSounds.Length > 0)
         {
             int randomIndex = Random.Range(0, gruntSounds.Length);
-            PlaySound(gruntSounds[randomIndex]);
+            audioSource.PlayOneShot(gruntSounds[randomIndex], gruntVolume);
         }
     }
 
