@@ -9,17 +9,24 @@ public class FlyingFish : MonoBehaviour
 
     [Header("Physics Settings")]
     public float gravityScale = 2f;
+    public float bounceForce = 0.3f;
+
+    [Header("Landing Detection")]
+    public float landingSpeed = 0.5f;
+    public float minFallTime = 1.0f;
 
     [Header("Animation (Optional)")]
     public Animator fishAnimator;
     public string landAnimationTrigger = "Land";
 
-    [HideInInspector] public FishPile fishPile;  // Sätts av FishingRod
+    [HideInInspector] public FishPile fishPile;
 
     private Rigidbody2D rb;
     private Collider2D fishCollider;
     private bool hasLanded = false;
-    private float landingSpeed = 0.5f;
+    private bool hasHitCeiling = false;
+    private bool hasGivenReward = false;
+    private float spawnTime;
 
     void Awake()
     {
@@ -31,45 +38,88 @@ public class FlyingFish : MonoBehaviour
 
         rb.gravityScale = gravityScale;
         rb.freezeRotation = false;
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;  // Bättre kollision!
 
         fishCollider = GetComponent<Collider2D>();
         if (fishCollider != null)
         {
-            fishCollider.isTrigger = true;
-            fishCollider.enabled = false;
+            fishCollider.isTrigger = false;  // MÅSTE vara false för att kollidera!
         }
 
-        if (fishAnimator == null)
-        {
-            fishAnimator = GetComponent<Animator>();
-        }
+        spawnTime = Time.time;
     }
 
     void Update()
     {
         if (!hasLanded && rb != null)
         {
-            if (rb.linearVelocity.magnitude < landingSpeed)
+            float timeSinceSpawn = Time.time - spawnTime;
+
+            // Enklare landningscheck
+            if (hasHitCeiling && timeSinceSpawn > minFallTime && rb.linearVelocity.magnitude < landingSpeed)
             {
                 Land();
             }
         }
     }
 
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        // Debug för att se vad fisken träffar
+        Debug.Log($"🐟 {fishName} träffade: {collision.gameObject.name} (Tag: {collision.gameObject.tag})");
+
+        // Kolla om fisken träffar taket
+        if (!hasHitCeiling && collision.gameObject.CompareTag("Ceiling"))
+        {
+            hasHitCeiling = true;
+            Debug.Log($"💥 {fishName} BONK på taket!");
+
+            Vector2 bounceVelocity = new Vector2(rb.linearVelocity.x, -Mathf.Abs(rb.linearVelocity.y) * bounceForce);
+            rb.linearVelocity = bounceVelocity;
+            rb.angularVelocity = Random.Range(-360f, 360f);
+        }
+
+        // Kolla om fisken träffar marken - LANDA DIREKT!
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            Debug.Log($"🌍 {fishName} träffade marken!");
+
+            if (!hasLanded)
+            {
+                Land();
+            }
+        }
+    }
+
+    void OnCollisionStay2D(Collision2D collision)
+    {
+        // Om fisken fortsätter vara på marken, landa!
+        if (!hasLanded && collision.gameObject.CompareTag("Ground"))
+        {
+            Land();
+        }
+    }
+
     void Land()
     {
-        hasLanded = true;
+        if (hasLanded) return;
 
+        hasLanded = true;
+        Debug.Log($"✅ {fishName} LANDADE!");
+
+        // STOPPA ALL RÖRELSE!
         if (rb != null)
         {
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
             rb.freezeRotation = true;
+            rb.bodyType = RigidbodyType2D.Kinematic;
         }
 
+        // Nu blir det trigger så spelaren kan plocka upp
         if (fishCollider != null)
         {
-            fishCollider.enabled = true;
+            fishCollider.isTrigger = true;
         }
 
         if (fishAnimator != null && !string.IsNullOrEmpty(landAnimationTrigger))
@@ -77,31 +127,43 @@ public class FlyingFish : MonoBehaviour
             fishAnimator.SetTrigger(landAnimationTrigger);
         }
 
-        Debug.Log($"{fishName} landade! Gå och plocka upp den.");
+        // Ge belöning
+        GiveRewardToPlayer();
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    void GiveRewardToPlayer()
     {
-        if (hasLanded && other.CompareTag("Player"))
+        if (hasGivenReward) return;
+        hasGivenReward = true;
+
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        if (playerObj != null)
         {
-            PlayerScript player = other.GetComponent<PlayerScript>();
+            PlayerScript player = playerObj.GetComponent<PlayerScript>();
             if (player != null)
             {
-                // Ge HP och poäng till spelaren
                 player.CollectFish(healthValue, scoreValue);
-                Debug.Log($"✅ Plockade upp {fishName}! +{healthValue} HP, +{scoreValue} poäng");
-
-                // NYTT: Lägg i högen istället för att förstöra direkt
-                if (fishPile != null)
-                {
-                    fishPile.AddFishToPile(gameObject, healthValue, scoreValue);
-                }
-                else
-                {
-                    // Om ingen fish pile finns, förstör som vanligt
-                    Destroy(gameObject);
-                }
+                Debug.Log($"💰 Gave {healthValue} HP and {scoreValue} points!");
             }
+        }
+
+        if (fishPile != null)
+        {
+            StartCoroutine(AddToPileAfterDelay(0.2f));
+        }
+        else
+        {
+            Destroy(gameObject, 2f);
+        }
+    }
+
+    System.Collections.IEnumerator AddToPileAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (fishPile != null)
+        {
+            fishPile.AddFishToPile(gameObject, healthValue, scoreValue);
         }
     }
 }

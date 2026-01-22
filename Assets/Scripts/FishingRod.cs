@@ -11,7 +11,6 @@ public class FishingRod : MonoBehaviour
     public float minBiteTime = 10f;
     public float maxBiteTime = 30f;
 
-    // PUBLIC states för UI att läsa
     [HideInInspector] public bool hasBite = false;
     [HideInInspector] public bool isWaitingForBite = false;
     [HideInInspector] public bool isReelingIn = false;
@@ -21,22 +20,25 @@ public class FishingRod : MonoBehaviour
     public float reelInDuration = 3f;
 
     [Header("Kast Settings")]
-    public float kastKraft = 10f;
-    public float kastHojd = 3f;
+    public float upwardForce = 20f;
+    public float horizontalForce = 15f;
     public Transform waterSpawnPoint;
 
     [Header("References")]
     public FishingZone fishingZone;
     public Transform playerTransform;
-    public FishPile fishPile;  // NYTT: Reference till fisk-högen
+    public FishPile fishPile;
+
+    [Header("Sound Effects 🔊")]
+    public AudioClip biteSound;
+    public AudioClip castSound;
+    public AudioClip catchSound;
+    private AudioSource audioSource;
 
     [Header("Animation (Optional)")]
     public Animator playerAnimator;
     public string fishingAnimTrigger = "StartFishing";
     public string catchAnimTrigger = "CatchFish";
-
-    [Header("Debug")]
-    public bool showDebugMessages = true;
 
     private Coroutine biteCoroutine;
 
@@ -47,10 +49,15 @@ public class FishingRod : MonoBehaviour
             playerTransform = transform.parent;
         }
 
-        // Hitta FishPile automatiskt om inte satt
         if (fishPile == null)
         {
             fishPile = FindObjectOfType<FishPile>();
+        }
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
         }
     }
 
@@ -65,12 +72,12 @@ public class FishingRod : MonoBehaviour
             return;
         }
 
-        // TRYCK E
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (!hasBite && biteCoroutine == null && !isReelingIn)
             {
                 biteCoroutine = StartCoroutine(WaitForBite());
+                PlaySound(castSound);
 
                 if (playerAnimator != null && !string.IsNullOrEmpty(fishingAnimTrigger))
                 {
@@ -83,7 +90,6 @@ public class FishingRod : MonoBehaviour
             }
         }
 
-        // HÅLL E
         if (Input.GetKey(KeyCode.E) && isReelingIn)
         {
             reelInProgress += Time.deltaTime;
@@ -94,7 +100,6 @@ public class FishingRod : MonoBehaviour
             }
         }
 
-        // SLÄPP E
         if (Input.GetKeyUp(KeyCode.E) && isReelingIn)
         {
             LostFish();
@@ -104,18 +109,12 @@ public class FishingRod : MonoBehaviour
     IEnumerator WaitForBite()
     {
         isWaitingForBite = true;
-
-        if (showDebugMessages)
-            Debug.Log("🎣 Kastar ut linan... väntar på napp.");
-
         float waitTime = Random.Range(minBiteTime, maxBiteTime);
         yield return new WaitForSeconds(waitTime);
 
         hasBite = true;
         isWaitingForBite = false;
-
-        if (showDebugMessages)
-            Debug.Log("⚡ NAPP! Håll E för att dra upp fisken!");
+        PlaySound(biteSound);
 
         biteCoroutine = null;
     }
@@ -124,15 +123,11 @@ public class FishingRod : MonoBehaviour
     {
         isReelingIn = true;
         reelInProgress = 0f;
-
-        if (showDebugMessages)
-            Debug.Log("Börjar dra upp fisken! HÅLL KVAR E!");
     }
 
     void CatchFish()
     {
-        if (showDebugMessages)
-            Debug.Log("✅ FÅNGAD! Fisken flyger upp från vattnet!");
+        PlaySound(catchSound);
 
         if (playerAnimator != null && !string.IsNullOrEmpty(catchAnimTrigger))
         {
@@ -144,12 +139,10 @@ public class FishingRod : MonoBehaviour
 
         if (fishPrefab == null)
         {
-            Debug.LogError("Fisk prefab saknas!");
             ResetFishing();
             return;
         }
 
-        // Spawn position (i vattnet)
         Vector3 spawnPos;
         if (waterSpawnPoint != null)
         {
@@ -173,29 +166,57 @@ public class FishingRod : MonoBehaviour
             rb.gravityScale = 2f;
         }
 
-        // Kasta mot spelaren
-        Vector2 direction = (playerTransform.position - spawnPos).normalized;
-        Vector2 force = new Vector2(direction.x * kastKraft, kastHojd);
+        // Hitta målposition
+        Vector3 targetPos;
+        if (fishPile != null)
+        {
+            targetPos = fishPile.transform.position;
+        }
+        else
+        {
+            targetPos = playerTransform.position + Vector3.right * 3f;
+        }
+
+        // Beräkna horizontal riktning
+        float horizontalDirection = targetPos.x - spawnPos.x;
+
+        // VIKTIGT: Om FishPile är direkt över vattnet (nästan 0), tvinga åt höger!
+        if (Mathf.Abs(horizontalDirection) < 0.5f)
+        {
+            Debug.LogWarning("⚠️ FishPile är nästan direkt över vattnet! Tvingar horizontal kraft åt höger.");
+            horizontalDirection = 1f; // Tvinga åt höger
+        }
+        else
+        {
+            // Normalisera riktningen
+            horizontalDirection = Mathf.Sign(horizontalDirection);
+        }
+
+        // Skapa force vektor
+        Vector2 force = new Vector2(
+            horizontalDirection * horizontalForce,  // Åt sidan (garanterat != 0)
+            upwardForce                              // Uppåt
+        );
+
         rb.AddForce(force, ForceMode2D.Impulse);
 
-        // NYTT: Sätt fish pile reference på fisken
+        Debug.Log($"🚀 KASTA FISK:");
+        Debug.Log($"   Spawn: {spawnPos}");
+        Debug.Log($"   Target: {targetPos}");
+        Debug.Log($"   Horizontal riktning: {horizontalDirection}");
+        Debug.Log($"   Force: X={force.x}, Y={force.y}");
+
         FlyingFish flyingFish = fish.GetComponent<FlyingFish>();
         if (flyingFish != null && fishPile != null)
         {
             flyingFish.fishPile = fishPile;
         }
 
-        if (showDebugMessages)
-            Debug.Log($"Kastade en {(isPerch ? "Abborre" : "Gädda")} från vattnet!");
-
         ResetFishing();
     }
 
     void LostFish()
     {
-        if (showDebugMessages)
-            Debug.Log("❌ SLAPP! Du tappade fisken...");
-
         ResetFishing();
     }
 
@@ -216,6 +237,31 @@ public class FishingRod : MonoBehaviour
         isReelingIn = false;
         isWaitingForBite = false;
         reelInProgress = 0f;
+    }
+
+    void PlaySound(AudioClip clip)
+    {
+        if (clip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
+    }
+
+    void OnDrawGizmos()
+    {
+        if (fishPile != null && waterSpawnPoint != null)
+        {
+            // Rita linje från vatten till pile
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(waterSpawnPoint.position, fishPile.transform.position);
+
+            // Rita pile position
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(fishPile.transform.position, 0.5f);
+
+            // Skriv position info
+            Gizmos.color = Color.white;
+        }
     }
 }
 
