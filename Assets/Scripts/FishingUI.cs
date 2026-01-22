@@ -1,16 +1,16 @@
 using UnityEngine;
-using TMPro;  // VIKTIGT: TextMeshPro namespace!
+using TMPro;
 
 public class FishingUI : MonoBehaviour
 {
     [Header("UI Text Reference")]
-    public TextMeshProUGUI promptText;  // ÄNDRAT: TextMeshProUGUI istället för Text
+    public TextMeshProUGUI promptText;
 
-    [Header("Messages - Anpassa dessa!")]
-    public string enterZoneMessage = "Tryck E för att fiska";
-    public string waitingMessage = "Väntar på napp...";
-    public string biteMessage = "NAPP! Håll in E!";
-    public string reelingMessage = "Håll kvar E! {0}%";
+    [Header("English Messages - Customize these!")]
+    public string enterZoneMessage = "Press E to fish";
+    public string waitingMessage = "Waiting for a bite...";
+    public string biteMessage = "BITE! Hold E!";
+    public string reelingMessage = "Keep holding E! {0}%";
 
     [Header("Colors")]
     public Color normalColor = Color.white;
@@ -21,16 +21,11 @@ public class FishingUI : MonoBehaviour
 
     void Start()
     {
-        // Hitta FishingRod på samma GameObject
         fishingRod = GetComponent<FishingRod>();
 
         if (promptText != null)
         {
             promptText.gameObject.SetActive(false);
-        }
-        else
-        {
-            Debug.LogWarning("FishingUI: Ingen TextMeshProUGUI satt! Dra in din TextMeshPro text i Inspector.");
         }
     }
 
@@ -38,7 +33,6 @@ public class FishingUI : MonoBehaviour
     {
         if (promptText == null || fishingRod == null) return;
 
-        // Visa bara text om vi är i fiskezonen
         if (fishingRod.fishingZone != null && fishingRod.fishingZone.playerInZone)
         {
             promptText.gameObject.SetActive(true);
@@ -54,26 +48,22 @@ public class FishingUI : MonoBehaviour
     {
         if (fishingRod.isReelingIn)
         {
-            // Visar progress under uppdragning
             float percent = (fishingRod.reelInProgress / fishingRod.reelInDuration) * 100f;
             promptText.text = string.Format(reelingMessage, percent.ToString("F0"));
             promptText.color = reelingColor;
         }
         else if (fishingRod.hasBite)
         {
-            // Det har nappat!
             promptText.text = biteMessage;
             promptText.color = biteColor;
         }
         else if (fishingRod.isWaitingForBite)
         {
-            // Väntar på napp
             promptText.text = waitingMessage;
             promptText.color = normalColor;
         }
         else
         {
-            // Står bara i zonen
             promptText.text = enterZoneMessage;
             promptText.color = normalColor;
         }

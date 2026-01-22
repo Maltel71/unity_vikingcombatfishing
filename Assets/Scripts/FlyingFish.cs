@@ -69,7 +69,7 @@ public class FlyingFish : MonoBehaviour
         Debug.Log($"🐟 {fishName} träffade: {collision.gameObject.name} (Tag: {collision.gameObject.tag})");
 
         // Kolla om fisken träffar taket
-        if (!hasHitCeiling && collision.gameObject.CompareTag("Ceiling"))
+        if (!hasHitCeiling && collision.gameObject.CompareTag("Wall_Up"))
         {
             hasHitCeiling = true;
             Debug.Log($"💥 {fishName} BONK på taket!");
