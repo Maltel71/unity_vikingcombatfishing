@@ -240,6 +240,13 @@ public class PlayerScript : MonoBehaviour
 
     void FlipCharacter()
     {
+        // Don't flip while reeling
+        FishingRod fishingRod = GetComponentInChildren<FishingRod>();
+        if (fishingRod != null && fishingRod.isReelingIn)
+        {
+            return;
+        }
+
         facingRight = !facingRight;
         Vector3 currentScale = transform.localScale;
         currentScale.x *= -1;

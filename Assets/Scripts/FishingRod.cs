@@ -140,16 +140,6 @@ public class FishingRod : MonoBehaviour
     {
         isReelingIn = true;
         reelInProgress = 0f;
-
-        if (playerTransform != null)
-        {
-            Vector3 scale = playerTransform.localScale;
-            if (scale.x < 0)
-            {
-                scale.x *= -1;
-                playerTransform.localScale = scale;
-            }
-        }
     }
 
     void CatchFish()
