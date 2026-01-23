@@ -252,4 +252,16 @@ public class PlayerScript : MonoBehaviour
         currentScale.x *= -1;
         transform.localScale = currentScale;
     }
+
+    // Public method to force player to face right (called by FishingRod)
+    public void FaceRight()
+    {
+        if (!facingRight)
+        {
+            facingRight = true;
+            Vector3 currentScale = transform.localScale;
+            currentScale.x = Mathf.Abs(currentScale.x);
+            transform.localScale = currentScale;
+        }
+    }
 }

@@ -140,6 +140,16 @@ public class FishingRod : MonoBehaviour
     {
         isReelingIn = true;
         reelInProgress = 0f;
+
+        // Force player to face right for reeling animation
+        if (playerTransform != null)
+        {
+            PlayerScript player = playerTransform.GetComponent<PlayerScript>();
+            if (player != null)
+            {
+                player.FaceRight();
+            }
+        }
     }
 
     void CatchFish()
