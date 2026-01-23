@@ -4,60 +4,48 @@ using System.Collections;
 public class EndlessWaveManager : MonoBehaviour
 {
     [Header("Wave Settings")]
-    public int currentWave = 1;
+    public int currentWave = 0;
     public float timeBetweenWaves = 10f;
     public GameObject[] gnomePrefabs;
     public Transform[] spawnPoints;
 
-    [Header("Static Scaling")]
-    // Set this to 5 in the Inspector to lock every round to 5 enemies
-    public int enemiesPerWaveFixed = 5;
+    [Header("Enemy Scaling")]
+    public int startingEnemies = 5;
+    public int enemiesIncreasePerWave = 2;
+    public float spawnDelay = 1.0f;
 
-    private int enemiesRemaining;
     private bool isSpawning = false;
 
     void Start()
     {
-        StartNextWave();
+        StartCoroutine(WaveLoop());
     }
 
-    void Update()
+    IEnumerator WaveLoop()
     {
-        if (enemiesRemaining <= 0 && !isSpawning)
+        while (true)
         {
-            StartCoroutine(WaveDelay());
+            currentWave++;
+            int enemiesToSpawn = startingEnemies + (currentWave - 1) * enemiesIncreasePerWave;
+
+            Debug.Log($"Starting Wave {currentWave}. Spawning {enemiesToSpawn} gnomes.");
+
+            yield return StartCoroutine(SpawnRoutine(enemiesToSpawn));
+
+            yield return new WaitForSeconds(timeBetweenWaves);
         }
     }
 
-    IEnumerator WaveDelay()
+    IEnumerator SpawnRoutine(int count)
     {
         isSpawning = true;
-        Debug.Log($"Wave {currentWave} Cleared! Next wave in {timeBetweenWaves} seconds.");
-        yield return new WaitForSeconds(timeBetweenWaves);
 
-        currentWave++;
-        StartNextWave();
-    }
-
-    void StartNextWave()
-    {
-        // Removed exponential math. Now always spawns 5.
-        enemiesRemaining = enemiesPerWaveFixed;
-
-        Debug.Log($"Starting Wave {currentWave}. Gnomes to slay: {enemiesRemaining}");
-        StartCoroutine(SpawnRoutine());
-    }
-
-    IEnumerator SpawnRoutine()
-    {
-        isSpawning = true;
-        for (int i = 0; i < enemiesPerWaveFixed; i++)
+        for (int i = 0; i < count; i++)
         {
             SpawnGnome();
-
-            // Fixed spawn delay (1.0s) so it doesn't get faster over time
-            yield return new WaitForSeconds(1.0f);
+            yield return new WaitForSeconds(spawnDelay);
         }
+
         isSpawning = false;
     }
 
@@ -74,13 +62,11 @@ public class EndlessWaveManager : MonoBehaviour
         if (enemy != null)
         {
             enemy.manager = this;
-            // Stat scaling (speed, health, damage) has been removed here 
-            // to ensure every round feels exactly the same.
         }
     }
 
     public void OnGnomeKilled()
     {
-        enemiesRemaining--;
+        // No longer needed for wave progression, but kept for compatibility
     }
 }

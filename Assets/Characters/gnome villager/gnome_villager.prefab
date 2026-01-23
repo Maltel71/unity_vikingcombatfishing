@@ -135,7 +135,27 @@ MonoBehaviour:
   gnomeName: 
   attackSpeed: 1
   movementSpeed: 1
+  minSizeMultiplier: 0.8
+  maxSizeMultiplier: 1.2
+  minSpeedMultiplier: 0.8
+  maxSpeedMultiplier: 1.2
   manager: {fileID: 0}
+  hurtSounds:
+  - {fileID: 8300000, guid: 77ffd37e8398a9b4a96180e56da9d6cc, type: 3}
+  - {fileID: 8300000, guid: 5a32c4bc5dca51741a0cf93979a87c7a, type: 3}
+  - {fileID: 8300000, guid: 0562619b0a9dbeb4993c1e6b81d5a99d, type: 3}
+  - {fileID: 8300000, guid: aff43d0264611a74ab840c38ccc0bc63, type: 3}
+  - {fileID: 8300000, guid: db3590e6a644ce341b709cc33f1993bc, type: 3}
+  hurtSoundVolume: 0.17
+  idleSounds:
+  - {fileID: 8300000, guid: f79b311588030bb47b7d76f0db095daa, type: 3}
+  - {fileID: 8300000, guid: cf9a31919f713ef42acea739ab1bddd9, type: 3}
+  - {fileID: 8300000, guid: 6ad88c4559be01148ae6845512e6cf67, type: 3}
+  - {fileID: 8300000, guid: 5f8e1a7f61c262143b7a5384a4d93670, type: 3}
+  - {fileID: 8300000, guid: 8f4c2f1975f8dec4ab61fb8b49d4f801, type: 3}
+  idleSoundVolume: 0.085
+  minIdleSoundTime: 8
+  maxIdleSoundTime: 24
 --- !u!50 &3769709757623608968
 Rigidbody2D:
   serializedVersion: 5
