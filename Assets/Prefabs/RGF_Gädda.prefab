@@ -181,9 +181,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlyingFish
   fishName: "G\xE4dda"
   healthValue: 40
-  scoreValue: 40
+  scoreValue: 5
   gravityScale: 2
-  bounceForce: 0.3
+  bounceForce: 0.7
   landingSpeed: 0.5
   minFallTime: 1
   fishAnimator: {fileID: 0}

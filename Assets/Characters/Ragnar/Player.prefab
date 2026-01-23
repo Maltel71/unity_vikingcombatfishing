@@ -311,10 +311,10 @@ MonoBehaviour:
   hurtSounds:
   - {fileID: 8300000, guid: 99422a8daf5517541819818b02983630, type: 3}
   - {fileID: 8300000, guid: bd3dc9f710ad6a44992f7a8fa30c8ee2, type: 3}
-  swordSwooshSound: {fileID: 8300000, guid: e7040b1c629cbc640b89e3689858344c, type: 3}
+  swordSwooshSound: {fileID: 8300000, guid: 27aa241cfdb6f3c45861d0466068a9f1, type: 3}
   enemyHitSound: {fileID: 8300000, guid: e36ed0df205f53144812148e9e2c36b4, type: 3}
   hurtSoundVolume: 0.1
-  attackSoundVolume: 0.646
+  attackSoundVolume: 0.487
   bloodParticle: {fileID: 7551302141640583522}
   DuckMode: 0
   DuckingSpeed: 2

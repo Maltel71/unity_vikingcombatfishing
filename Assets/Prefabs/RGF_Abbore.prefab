@@ -180,10 +180,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlyingFish
   fishName: Fisk
-  healthValue: 20
-  scoreValue: 20
+  healthValue: 10
+  scoreValue: 2
   gravityScale: 2
-  bounceForce: 0.3
+  bounceForce: 0.6
   landingSpeed: 0.5
   minFallTime: 1
   fishAnimator: {fileID: 0}
