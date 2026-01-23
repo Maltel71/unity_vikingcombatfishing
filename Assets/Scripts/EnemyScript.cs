@@ -18,10 +18,21 @@ public class EnemyScript : MonoBehaviour
     public float movementSpeed;
     private Transform playerTransform;
 
-    // --- ADDED FOR WAVE SYSTEM ---
     [Header("Wave System Connection")]
     public EndlessWaveManager manager;
-    // ------------------------------
+
+    [Header("Sound Effects")]
+    public AudioClip[] hurtSounds;
+    public AudioClip[] idleSounds;
+    [Range(0f, 1f)]
+    public float enemySoundVolume = 1f;
+
+    [Header("Idle Sound Settings")]
+    public float minIdleSoundTime = 3f;
+    public float maxIdleSoundTime = 8f;
+    private float nextIdleSoundTime;
+
+    private AudioSource audioSource;
 
     void Start()
     {
@@ -37,8 +48,15 @@ public class EnemyScript : MonoBehaviour
             Debug.LogError("Gnome cannot find Ragnar! Is he tagged as 'Player'?");
         }
 
-        // Find the player by tag
-       
+        // Setup audio source
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        // Set first idle sound time
+        nextIdleSoundTime = Time.time + Random.Range(minIdleSoundTime, maxIdleSoundTime);
 
         switch (type)
         {
@@ -63,40 +81,43 @@ public class EnemyScript : MonoBehaviour
         }
     }
 
-    // --- ADDED MOVEMENT LOGIC ---
     void Update()
     {
-
         if (playerTransform == null)
         {
             Debug.LogWarning("Gnome is lost! It can't find anything with the 'Player' tag.");
         }
-        else
-        {
-           // Debug.Log("Gnome is chasing " + playerTransform.name);
-        }
 
         if (playerTransform != null)
         {
-            // 2. Calculate the direction to Ragnar
+            // Calculate the direction to Ragnar
             Vector3 direction = (playerTransform.position - transform.position).normalized;
 
-            // 3. Lock the Y axis so gnomes don't fly or sink into the floor
+            // Lock the Y axis so gnomes don't fly or sink into the floor
             direction.y = 0;
 
-            // 4. Move the gnome forward
+            // Move the gnome forward
             transform.position += direction * movementSpeed * Time.deltaTime;
-
-           
         }
 
+        // Play idle sounds at random intervals
+        if (Time.time >= nextIdleSoundTime && idleSounds.Length > 0)
+        {
+            PlayRandomIdleSound();
+            nextIdleSoundTime = Time.time + Random.Range(minIdleSoundTime, maxIdleSoundTime);
+        }
     }
-    // ----------------------------
 
-    // --- ADDED DAMAGE LOGIC ---
     public void TakeDamage(int amount)
     {
         health -= amount;
+
+        // Play hurt sound
+        if (hurtSounds.Length > 0 && audioSource != null)
+        {
+            int randomIndex = Random.Range(0, hurtSounds.Length);
+            audioSource.PlayOneShot(hurtSounds[randomIndex], enemySoundVolume);
+        }
 
         if (health <= 0)
         {
@@ -139,20 +160,25 @@ public class EnemyScript : MonoBehaviour
             manager.OnGnomeKilled();
         }
     }
-    // ----------------------------
+
+    void PlayRandomIdleSound()
+    {
+        if (audioSource != null && idleSounds.Length > 0)
+        {
+            int randomIndex = Random.Range(0, idleSounds.Length);
+            audioSource.PlayOneShot(idleSounds[randomIndex], enemySoundVolume);
+        }
+    }
 
     private void OnCollisionStay2D(Collision2D collision)
     {
-       
-
-       if (collision.gameObject.CompareTag("Player"))
+        if (collision.gameObject.CompareTag("Player"))
         {
             PlayerScript player = collision.gameObject.GetComponent<PlayerScript>();
 
             if (player != null)
             {
-
-                //Cooldown Logic for Attacks
+                // Cooldown Logic for Attacks
                 if (Time.time >= nextAttackTime)
                 {
                     Attack(player);
@@ -160,15 +186,11 @@ public class EnemyScript : MonoBehaviour
                     nextAttackTime = Time.time + (1f / attackSpeed);
                 }
             }
-        
         }
     }
 
-    
-
     void Attack(PlayerScript player)
-    {  
-        
+    {
         Debug.Log($"{gnomeName} hits you for {damage} damage!");
         player.TakeDamage(damage);
     }
