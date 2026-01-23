@@ -14,6 +14,7 @@ public class PlayerAnimationController : MonoBehaviour
     private const string CATCH = "Ragnar_Catch_Animate";
     private const string DEATH = "DeathAnimeRagnar";
     private const string DEATH_IDLE = "Ragnar_DeathIdleAnimate";
+    private const string DANCE = "danceanimragnar";
 
     private string currentState;
     private bool isPlayingAction = false; // Track if an action animation is playing
@@ -108,5 +109,17 @@ public class PlayerAnimationController : MonoBehaviour
     {
         ChangeAnimationState(CATCH);
         isPlayingAction = true;
+    }
+
+    public void StartDancing()
+    {
+        ChangeAnimationState(DANCE);
+        isPlayingAction = true;
+    }
+
+    public void StopDancing()
+    {
+        isPlayingAction = false;
+        // Will naturally return to idle/walk in Update()
     }
 }
