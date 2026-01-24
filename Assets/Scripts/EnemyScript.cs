@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class EnemyScript : MonoBehaviour
 {
@@ -161,11 +162,13 @@ public class EnemyScript : MonoBehaviour
 
     void Die()
     {
-        // Hide sprite
-        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
+        // Disable physics
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
         {
-            spriteRenderer.enabled = false;
+            rb.linearVelocity = Vector2.zero;
+            rb.gravityScale = 0f;
+            rb.bodyType = RigidbodyType2D.Kinematic;
         }
 
         // Disable colliders
@@ -180,19 +183,42 @@ public class EnemyScript : MonoBehaviour
         if (bloodParticle != null)
         {
             bloodParticle.Play();
+        }
 
-            // Destroy after particle finishes
-            Destroy(gameObject, bloodParticle.main.duration);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        // Start fade out and destroy after 4 seconds
+        StartCoroutine(FadeOutAndDestroy());
 
         if (manager != null)
         {
             manager.OnGnomeKilled();
         }
+    }
+
+    IEnumerator FadeOutAndDestroy()
+    {
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // Wait 3 seconds before starting fade
+        yield return new WaitForSeconds(3f);
+
+        // Fade out over 1 second
+        if (spriteRenderer != null)
+        {
+            float elapsed = 0f;
+            float fadeDuration = 1f;
+            Color startColor = spriteRenderer.color;
+
+            while (elapsed < fadeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float alpha = Mathf.Lerp(1f, 0f, elapsed / fadeDuration);
+                spriteRenderer.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
+                yield return null;
+            }
+        }
+
+        // Destroy the gnome
+        Destroy(gameObject);
     }
 
     void PlayRandomIdleSound()
@@ -226,6 +252,14 @@ public class EnemyScript : MonoBehaviour
     void Attack(PlayerScript player)
     {
         Debug.Log($"{gnomeName} hits you for {damage} damage!");
+
+        // Trigger attack animation
+        EnemyAnimationController animController = GetComponent<EnemyAnimationController>();
+        if (animController != null)
+        {
+            animController.PlayAttack();
+        }
+
         player.TakeDamage(damage);
     }
 }
