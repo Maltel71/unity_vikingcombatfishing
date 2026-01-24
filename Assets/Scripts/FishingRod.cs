@@ -21,6 +21,7 @@ public class FishingRod : MonoBehaviour
 
     [Header("Reel In Settings")]
     public float reelInDuration = 3f;
+    public Transform reelingPosition;
 
     [Header("Kast Settings")]
     public float minUpwardForce = 15f;
@@ -51,6 +52,7 @@ public class FishingRod : MonoBehaviour
     public Transform pickupRangeObject;
 
     private Coroutine biteCoroutine;
+    private Vector3 originalPlayerPosition;
 
     void Start()
     {
@@ -148,6 +150,14 @@ public class FishingRod : MonoBehaviour
             if (player != null)
             {
                 player.FaceRight();
+            }
+
+            // Teleport player to reeling position if set
+            if (reelingPosition != null)
+            {
+                originalPlayerPosition = playerTransform.position;
+                playerTransform.position = reelingPosition.position;
+                Debug.Log("Player teleported to reeling position");
             }
         }
     }
@@ -270,6 +280,14 @@ public class FishingRod : MonoBehaviour
             Gizmos.DrawWireSphere(fishPile.transform.position, 0.5f);
 
             Gizmos.color = Color.white;
+        }
+
+        // Draw reeling position in editor
+        if (reelingPosition != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(reelingPosition.position, 0.3f);
+            Gizmos.DrawLine(reelingPosition.position, reelingPosition.position + Vector3.up * 0.5f);
         }
     }
 }
