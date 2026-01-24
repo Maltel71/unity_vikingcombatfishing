@@ -10,7 +10,7 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] public float playerSpeed = 5f;
     [SerializeField] public string playerName = "Ragnar";
     [SerializeField] public float AttackSpeed = 0.1f;
-    [SerializeField] public float AttackPower = 100f;
+    [SerializeField] public float AttackPower = 25f;
     [SerializeField] public bool isAlive = true;
 
     [Header("Sound Effects")]
@@ -35,8 +35,7 @@ public class PlayerScript : MonoBehaviour
     private bool facingRight = true;
 
     [Header("2D Combat Settings")]
-    public float attackRange = 1.2f;
-    public float attackOffset = 1.0f;
+    public AttackCollider attackCollider;
     private float nextAttackTime = 0f;
 
     void Start()
@@ -97,6 +96,13 @@ public class PlayerScript : MonoBehaviour
         {
             Debug.Log($"{playerName} swings his weapon with the Spacebar!");
 
+            // Trigger attack animation
+            PlayerAnimationController animController = GetComponent<PlayerAnimationController>();
+            if (animController != null)
+            {
+                animController.PlayAttack();
+            }
+
             // Play sword swoosh sound
             if (swordSwooshSound != null && audioSource != null)
             {
@@ -106,9 +112,36 @@ public class PlayerScript : MonoBehaviour
             // Apply Attack Speed cooldown
             nextAttackTime = Time.time + (1f / AttackSpeed);
 
-            // Logic to check if an enemy is hit
-            CheckForEnemyHit();
+            // Use the attack collider
+            if (attackCollider != null)
+            {
+                StartCoroutine(AttackRoutine());
+            }
         }
+    }
+
+    IEnumerator AttackRoutine()
+    {
+        // Enable the attack collider
+        attackCollider.EnableCollider();
+
+        // Wait a tiny bit for collision detection
+        yield return new WaitForSeconds(0.1f);
+
+        // Activate the attack (damage all enemies in range)
+        attackCollider.ActivateAttack(AttackPower);
+
+        // Play enemy hit sound
+        if (enemyHitSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(enemyHitSound, attackSoundVolume);
+        }
+
+        // Wait a bit more for the animation
+        yield return new WaitForSeconds(0.2f);
+
+        // Disable the collider
+        attackCollider.DisableCollider();
     }
 
     void HandleDance()
@@ -146,41 +179,13 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-    void CheckForEnemyHit()
-    {
-        float faceDir = transform.localScale.x > 0 ? 1 : -1;
-        Vector2 attackPoint = (Vector2)transform.position + new Vector2(faceDir * attackOffset, 0);
-
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(attackPoint, attackRange);
-
-        foreach (Collider2D hit in hitEnemies)
-        {
-            if (hit.CompareTag("Enemy"))
-            {
-                EnemyScript enemy = hit.GetComponent<EnemyScript>();
-                if (enemy != null)
-                {
-                    enemy.TakeDamage((int)AttackPower);
-
-                    // Play enemy hit sound
-                    if (enemyHitSound != null && audioSource != null)
-                    {
-                        audioSource.PlayOneShot(enemyHitSound, attackSoundVolume);
-                    }
-
-                    Debug.Log("Hit an enemy for " + AttackPower + " damage!");
-                    break; // Only hit ONE enemy per attack
-                }
-            }
-        }
-    }
-
+    // Debug visualization - shows attack collider location
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.red;
-        float faceDir = transform.localScale.x > 0 ? 1 : -1;
-        Vector2 attackPoint = (Vector2)transform.position + new Vector2(faceDir * attackOffset, 0);
-        Gizmos.DrawWireSphere(attackPoint, attackRange);
+        if (attackCollider != null)
+        {
+            // The AttackCollider will show its own collider in the scene view
+        }
     }
 
     public void TakeDamage(int damage)

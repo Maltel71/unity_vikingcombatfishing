@@ -71,24 +71,21 @@ public class EnemyScript : MonoBehaviour
         // Set first idle sound time
         nextIdleSoundTime = Time.time + Random.Range(minIdleSoundTime, maxIdleSoundTime);
 
-        // Set base stats based on type
+        // Set base stats based on type (removed health assignments)
         switch (type)
         {
             case GnomeType.Garden:
                 gnomeName = "C_Common_Gnome";
-                health = 5;
                 damage = 10;
                 movementSpeed = 0.3f;
                 break;
             case GnomeType.Berserker:
                 gnomeName = "C_Berserker_Gnome";
-                health = 100;
                 damage = 5;
                 movementSpeed = 1.5f;
                 break;
             case GnomeType.Brute:
                 gnomeName = "C_Brute_Gnome";
-                health = 200;
                 damage = 20;
                 movementSpeed = 0.1f;
                 break;
@@ -141,6 +138,13 @@ public class EnemyScript : MonoBehaviour
     public void TakeDamage(int amount)
     {
         health -= amount;
+
+        // Play blood particle effect on every hit
+        ParticleSystem bloodParticle = GetComponentInChildren<ParticleSystem>();
+        if (bloodParticle != null)
+        {
+            bloodParticle.Play();
+        }
 
         // Play hurt sound
         if (hurtSounds.Length > 0 && audioSource != null)

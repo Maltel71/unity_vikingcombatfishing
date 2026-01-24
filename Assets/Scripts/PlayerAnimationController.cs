@@ -77,13 +77,7 @@ public class PlayerAnimationController : MonoBehaviour
             return;
         }
 
-        // Attack
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            ChangeAnimationState(ATTACK);
-            isPlayingAction = true;
-            return;
-        }
+        // Attack animation is now triggered by PlayerScript via PlayAttack()
 
         // Movement
         float moveInput = Input.GetAxis("Horizontal");
@@ -103,6 +97,12 @@ public class PlayerAnimationController : MonoBehaviour
 
         animator.Play(newState);
         currentState = newState;
+    }
+
+    public void PlayAttack()
+    {
+        ChangeAnimationState(ATTACK);
+        isPlayingAction = true;
     }
 
     public void PlayCatch()
