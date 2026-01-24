@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 7248302793669030397}
   - component: {fileID: 5263713231040441312}
   - component: {fileID: 5394482421934542673}
-  - component: {fileID: 5792712667036141565}
   - component: {fileID: 7390009231158237306}
+  - component: {fileID: 67352816174813328}
   m_Layer: 8
   m_Name: Fish_Abbore
   m_TagString: Untagged
@@ -121,8 +121,28 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!61 &5792712667036141565
-BoxCollider2D:
+--- !u!114 &7390009231158237306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2929332938608316269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fa5f3decbd05f54e914696a58b0630a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlyingFish
+  fishName: Abbore
+  healthValue: 10
+  scoreValue: 2
+  gravityScale: 2
+  minAngularVelocity: -360
+  maxAngularVelocity: 360
+  pickupRangeObject: {fileID: 7680295468825326352}
+  fishPile: {fileID: 0}
+--- !u!70 &67352816174813328
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -155,41 +175,9 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 0.63, y: 1.28}
-    newSize: {x: 0.63, y: 1.28}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 0.63, y: 1.28}
-  m_EdgeRadius: 0
---- !u!114 &7390009231158237306
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2929332938608316269}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fa5f3decbd05f54e914696a58b0630a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlyingFish
-  fishName: Abbore
-  healthValue: 10
-  scoreValue: 2
-  gravityScale: 2
-  bounceForce: 0.6
-  landingSpeed: 0.5
-  minFallTime: 1
-  fishAnimator: {fileID: 0}
-  landAnimationTrigger: Land
-  pickupRangeObject: {fileID: 7680295468825326352}
-  fishPile: {fileID: 0}
+  m_Offset: {x: -0.01989317, y: 0.051391065}
+  m_Size: {x: 0.42443562, y: 0.86555564}
+  m_Direction: 0
 --- !u!1 &5008600103624771905
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,4 +245,4 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.99
+  m_Radius: 1.5

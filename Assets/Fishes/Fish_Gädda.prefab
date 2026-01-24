@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 4602829635070305094}
   - component: {fileID: 6861011552313934589}
   - component: {fileID: 7823993896824925625}
-  - component: {fileID: 1724425870834666971}
   - component: {fileID: 4576863037127722434}
+  - component: {fileID: 3101576623259102180}
   m_Layer: 8
   m_Name: "Fish_G\xE4dda"
   m_TagString: Untagged
@@ -121,8 +121,28 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!61 &1724425870834666971
-BoxCollider2D:
+--- !u!114 &4576863037127722434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5156935056799882537}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fa5f3decbd05f54e914696a58b0630a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlyingFish
+  fishName: "G\xE4dda"
+  healthValue: 40
+  scoreValue: 5
+  gravityScale: 2
+  minAngularVelocity: -360
+  maxAngularVelocity: 360
+  pickupRangeObject: {fileID: 277110292678728226}
+  fishPile: {fileID: 0}
+--- !u!70 &3101576623259102180
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -156,40 +176,8 @@ BoxCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1.02, y: 3.71}
-    newSize: {x: 0.63, y: 1.28}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1.02, y: 3.94}
-  m_EdgeRadius: 0
---- !u!114 &4576863037127722434
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5156935056799882537}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fa5f3decbd05f54e914696a58b0630a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FlyingFish
-  fishName: "G\xE4dda"
-  healthValue: 40
-  scoreValue: 5
-  gravityScale: 2
-  bounceForce: 0.7
-  landingSpeed: 0.5
-  minFallTime: 1
-  fishAnimator: {fileID: 0}
-  landAnimationTrigger: Land
-  pickupRangeObject: {fileID: 277110292678728226}
-  fishPile: {fileID: 0}
+  m_Size: {x: 0.62, y: 3.26}
+  m_Direction: 0
 --- !u!1 &6768023257776867412
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,4 +245,4 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 1.35
+  m_Radius: 1.5

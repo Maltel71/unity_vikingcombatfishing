@@ -14,6 +14,9 @@ public class FlyingFish : MonoBehaviour
     public float minAngularVelocity = -360f;
     public float maxAngularVelocity = 360f;
 
+    [Header("Layer Change Settings")]
+    public float timeUntilGroundLayer = 4f;
+
     [Header("Pickup Settings")]
     public Transform pickupRangeObject;
 
@@ -23,6 +26,8 @@ public class FlyingFish : MonoBehaviour
     private Collider2D fishCollider;
     private bool canPickup = false;
     private GameObject playerInRange = null;
+    private float spawnTime;
+    private bool layerChanged = false;
 
     void Awake()
     {
@@ -55,6 +60,8 @@ public class FlyingFish : MonoBehaviour
                 pickupCollider.isTrigger = true;
             }
         }
+
+        spawnTime = Time.time;
     }
 
     void Update()
@@ -64,23 +71,34 @@ public class FlyingFish : MonoBehaviour
         {
             PickupFish();
         }
+
+        // Change layer after time has passed
+        if (!layerChanged && Time.time >= spawnTime + timeUntilGroundLayer)
+        {
+            ChangeToGroundLayer();
+        }
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        if (collision.gameObject.CompareTag("Ground") && !layerChanged)
         {
-            // Change fish layer to GroundFish
-            int groundFishLayer = LayerMask.NameToLayer("GroundFish");
-            if (groundFishLayer != -1)
-            {
-                gameObject.layer = groundFishLayer;
-                Debug.Log($"{fishName} hit ground, changed to GroundFish layer");
-            }
-            else
-            {
-                Debug.LogWarning("GroundFish layer not found! Create it in Layer settings.");
-            }
+            ChangeToGroundLayer();
+        }
+    }
+
+    void ChangeToGroundLayer()
+    {
+        layerChanged = true;
+        int groundFishLayer = LayerMask.NameToLayer("GroundFish");
+        if (groundFishLayer != -1)
+        {
+            gameObject.layer = groundFishLayer;
+            Debug.Log($"{fishName} changed to GroundFish layer");
+        }
+        else
+        {
+            Debug.LogWarning("GroundFish layer not found! Create it in Layer settings.");
         }
     }
 

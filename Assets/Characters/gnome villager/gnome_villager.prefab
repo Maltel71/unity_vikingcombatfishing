@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3094586317560644480}
   - component: {fileID: 132178683361241906}
   - component: {fileID: 3769709757623608968}
-  - component: {fileID: 1725105595030612700}
+  - component: {fileID: 5573726144239724831}
   m_Layer: 6
   m_Name: gnome_villager
   m_TagString: Enemy
@@ -183,8 +183,8 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!61 &1725105595030612700
-BoxCollider2D:
+--- !u!70 &5573726144239724831
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -199,7 +199,7 @@ BoxCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 192
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -217,18 +217,9 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.10604203, y: 0.1305139}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 5.12, y: 5.12}
-    newSize: {x: 5.12, y: 5.12}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  m_Size: {x: 1.7755742, y: 2.6728597}
-  m_EdgeRadius: 0
+  m_Offset: {x: 0.18, y: -0.01}
+  m_Size: {x: 1.32, y: 2.21}
+  m_Direction: 0
 --- !u!1001 &2861669358622059118
 PrefabInstance:
   m_ObjectHideFlags: 0
