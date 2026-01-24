@@ -10,6 +10,10 @@ public class FlyingFish : MonoBehaviour
     [Header("Physics Settings")]
     public float gravityScale = 2f;
 
+    [Header("Rotation Settings")]
+    public float minAngularVelocity = -360f;
+    public float maxAngularVelocity = 360f;
+
     [Header("Pickup Settings")]
     public Transform pickupRangeObject;
 
@@ -31,6 +35,9 @@ public class FlyingFish : MonoBehaviour
         rb.gravityScale = gravityScale;
         rb.freezeRotation = false;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+        // Apply random rotation spin
+        rb.angularVelocity = Random.Range(minAngularVelocity, maxAngularVelocity);
 
         fishCollider = GetComponent<Collider2D>();
         if (fishCollider != null)
@@ -56,6 +63,24 @@ public class FlyingFish : MonoBehaviour
         if (canPickup && Input.GetKeyDown(KeyCode.E))
         {
             PickupFish();
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            // Change fish layer to GroundFish
+            int groundFishLayer = LayerMask.NameToLayer("GroundFish");
+            if (groundFishLayer != -1)
+            {
+                gameObject.layer = groundFishLayer;
+                Debug.Log($"{fishName} hit ground, changed to GroundFish layer");
+            }
+            else
+            {
+                Debug.LogWarning("GroundFish layer not found! Create it in Layer settings.");
+            }
         }
     }
 
