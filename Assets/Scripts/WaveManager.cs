@@ -14,6 +14,9 @@ public class EndlessWaveManager : MonoBehaviour
     public int enemiesIncreasePerWave = 2;
     public float spawnDelay = 1.0f;
 
+    [Header("UI")]
+    public WaveAnnouncer waveAnnouncer;
+
     private bool isSpawning = false;
 
     void Start()
@@ -26,6 +29,18 @@ public class EndlessWaveManager : MonoBehaviour
         while (true)
         {
             currentWave++;
+
+            // Announce wave
+            if (waveAnnouncer != null)
+            {
+                Debug.Log("Calling WaveAnnouncer for wave " + currentWave);
+                waveAnnouncer.AnnounceWave(currentWave);
+            }
+            else
+            {
+                Debug.LogError("WaveAnnouncer is NOT assigned in WaveManager!");
+            }
+
             int enemiesToSpawn = startingEnemies + (currentWave - 1) * enemiesIncreasePerWave;
 
             Debug.Log($"Starting Wave {currentWave}. Spawning {enemiesToSpawn} gnomes.");

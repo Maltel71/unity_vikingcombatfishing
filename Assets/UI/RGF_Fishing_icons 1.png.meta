@@ -97,13 +97,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: RGF_Fishing_icons_0
+      name: RGF_Fishing_icons 1_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 134
-        width: 146
-        height: 134
+        y: 139
+        width: 150
+        height: 138
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,20 +112,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ca00a5f0130304041a1b7ff953ffdaba
-      internalID: -1287513507
+      spriteID: d971ca6daeabe6b4b93067872f71272f
+      internalID: 926801038
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RGF_Fishing_icons_1
+      name: RGF_Fishing_icons 1_1
       rect:
         serializedVersion: 2
-        x: 146
-        y: 134
-        width: 146
-        height: 134
+        x: 150
+        y: 139
+        width: 150
+        height: 138
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -134,20 +134,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d492e807b858a48428c1d863a566f387
-      internalID: 461497794
+      spriteID: b17c36774cc6b9445b2283c096772063
+      internalID: -539825141
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RGF_Fishing_icons_2
+      name: RGF_Fishing_icons 1_2
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 146
-        height: 134
+        y: 1
+        width: 150
+        height: 138
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,20 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a726abf511a3b564f8361d929d5bf25e
-      internalID: -893552655
+      spriteID: b89b244b6ac11504d97b8bff33ac7e8d
+      internalID: 56106587
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: RGF_Fishing_icons_3
+      name: RGF_Fishing_icons 1_3
       rect:
         serializedVersion: 2
-        x: 146
-        y: 0
-        width: 146
-        height: 134
+        x: 150
+        y: 1
+        width: 150
+        height: 138
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -178,8 +178,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a6b7b1bc21f7fd54aa942413c1a14b14
-      internalID: 785326670
+      spriteID: 4e04d4402ef60f44aa64142000b559a4
+      internalID: -1496727740
       vertices: []
       indices: 
       edges: []
@@ -188,7 +188,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: e7716678e948dc546a76280e69f66807
     internalID: 0
     vertices: []
     indices: 
@@ -198,12 +198,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":2.0,"y":2.0},"gridSpriteSize":{"x":146.0,"y":134.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":2.0,"y":2.0},"gridSpriteSize":{"x":150.0,"y":138.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      RGF_Fishing_icons_0: -1287513507
-      RGF_Fishing_icons_1: 461497794
-      RGF_Fishing_icons_2: -893552655
-      RGF_Fishing_icons_3: 785326670
+      RGF_Fishing_icons 1_0: 926801038
+      RGF_Fishing_icons 1_1: -539825141
+      RGF_Fishing_icons 1_2: 56106587
+      RGF_Fishing_icons 1_3: -1496727740
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
