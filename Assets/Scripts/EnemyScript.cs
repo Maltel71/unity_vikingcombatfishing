@@ -109,6 +109,9 @@ public class EnemyScript : MonoBehaviour
 
     void Update()
     {
+        // Stop updating if dead
+        if (health <= 0) return;
+
         if (playerTransform == null)
         {
             Debug.LogWarning("Gnome is lost! It can't find anything with the 'Player' tag.");
