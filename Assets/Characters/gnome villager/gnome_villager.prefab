@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 132178683361241906}
   - component: {fileID: 3769709757623608968}
   - component: {fileID: 5573726144239724831}
+  - component: {fileID: 2191086715722669910}
   m_Layer: 6
   m_Name: gnome_villager
   m_TagString: Enemy
@@ -134,7 +135,8 @@ MonoBehaviour:
   health: 100
   gnomeName: 
   attackSpeed: 1
-  movementSpeed: 1
+  attackRange: 2.9
+  movementSpeed: 2
   minSizeMultiplier: 0.8
   maxSizeMultiplier: 1.2
   minSpeedMultiplier: 0.8
@@ -181,7 +183,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!70 &5573726144239724831
 CapsuleCollider2D:
@@ -220,6 +222,18 @@ CapsuleCollider2D:
   m_Offset: {x: 0.18, y: -0.01}
   m_Size: {x: 1.32, y: 2.21}
   m_Direction: 0
+--- !u!114 &2191086715722669910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2064343814983821992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4d4e13166a777f4c93dc2ff78d6936b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationController
 --- !u!1001 &2861669358622059118
 PrefabInstance:
   m_ObjectHideFlags: 0

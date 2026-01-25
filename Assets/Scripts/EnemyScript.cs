@@ -14,6 +14,7 @@ public class EnemyScript : MonoBehaviour
     [Header("Combat Settings")]
     public float attackSpeed = 1.0f;
     private float nextAttackTime = 0f;
+    public float attackRange = 1.5f;
 
     [Header("Movement Settings")]
     public float movementSpeed;
@@ -50,7 +51,6 @@ public class EnemyScript : MonoBehaviour
 
     void Start()
     {
-        // Search for the object tagged "Player"
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
 
         if (playerObj != null)
@@ -62,47 +62,45 @@ public class EnemyScript : MonoBehaviour
             Debug.LogError("Gnome cannot find Ragnar! Is he tagged as 'Player'?");
         }
 
-        // Setup audio source
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        // Set first idle sound time
         nextIdleSoundTime = Time.time + Random.Range(minIdleSoundTime, maxIdleSoundTime);
 
-        // Set base stats based on type (removed health assignments)
-        switch (type)
+        // Only set defaults if not configured in Inspector
+        if (movementSpeed == 0f && damage == 0 && string.IsNullOrEmpty(gnomeName))
         {
-            case GnomeType.Garden:
-                gnomeName = "C_Common_Gnome";
-                damage = 10;
-                movementSpeed = 0.3f;
-                break;
-            case GnomeType.Berserker:
-                gnomeName = "C_Berserker_Gnome";
-                damage = 5;
-                movementSpeed = 1.5f;
-                break;
-            case GnomeType.Brute:
-                gnomeName = "C_Brute_Gnome";
-                damage = 20;
-                movementSpeed = 0.1f;
-                break;
+            switch (type)
+            {
+                case GnomeType.Garden:
+                    gnomeName = "C_Common_Gnome";
+                    damage = 10;
+                    movementSpeed = 0.3f;
+                    break;
+                case GnomeType.Berserker:
+                    gnomeName = "C_Berserker_Gnome";
+                    damage = 5;
+                    movementSpeed = 1.5f;
+                    break;
+                case GnomeType.Brute:
+                    gnomeName = "C_Brute_Gnome";
+                    damage = 20;
+                    movementSpeed = 0.1f;
+                    break;
+            }
         }
 
-        // Apply random variations
         ApplyVariations();
     }
 
     void ApplyVariations()
     {
-        // Random size variation
         float sizeMultiplier = Random.Range(minSizeMultiplier, maxSizeMultiplier);
         transform.localScale *= sizeMultiplier;
 
-        // Random speed variation
         float speedMultiplier = Random.Range(minSpeedMultiplier, maxSpeedMultiplier);
         movementSpeed *= speedMultiplier;
 
@@ -114,21 +112,30 @@ public class EnemyScript : MonoBehaviour
         if (playerTransform == null)
         {
             Debug.LogWarning("Gnome is lost! It can't find anything with the 'Player' tag.");
+            return;
         }
 
-        if (playerTransform != null)
+        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+
+        // Check if player is in attack range
+        if (distanceToPlayer <= attackRange && Time.time >= nextAttackTime)
         {
-            // Calculate the direction to Ragnar
+            PlayerScript player = playerTransform.GetComponent<PlayerScript>();
+            if (player != null)
+            {
+                Attack(player);
+                nextAttackTime = Time.time + (1f / attackSpeed);
+            }
+        }
+        else if (distanceToPlayer > attackRange)
+        {
+            // Move towards player only if not in attack range
             Vector3 direction = (playerTransform.position - transform.position).normalized;
-
-            // Lock the Y axis so gnomes don't fly or sink into the floor
             direction.y = 0;
-
-            // Move the gnome forward
             transform.position += direction * movementSpeed * Time.deltaTime;
         }
 
-        // Play idle sounds at random intervals
+        // Play idle sounds
         if (Time.time >= nextIdleSoundTime && idleSounds.Length > 0)
         {
             PlayRandomIdleSound();
@@ -140,14 +147,12 @@ public class EnemyScript : MonoBehaviour
     {
         health -= amount;
 
-        // Play blood particle effect on every hit
         ParticleSystem bloodParticle = GetComponentInChildren<ParticleSystem>();
         if (bloodParticle != null)
         {
             bloodParticle.Play();
         }
 
-        // Play hurt sound
         if (hurtSounds.Length > 0 && audioSource != null)
         {
             int randomIndex = Random.Range(0, hurtSounds.Length);
@@ -162,7 +167,6 @@ public class EnemyScript : MonoBehaviour
 
     void Die()
     {
-        // Disable physics
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb != null)
         {
@@ -171,21 +175,18 @@ public class EnemyScript : MonoBehaviour
             rb.bodyType = RigidbodyType2D.Kinematic;
         }
 
-        // Disable colliders
         Collider2D[] colliders = GetComponents<Collider2D>();
         foreach (Collider2D col in colliders)
         {
             col.enabled = false;
         }
 
-        // Play blood particle system
         ParticleSystem bloodParticle = GetComponentInChildren<ParticleSystem>();
         if (bloodParticle != null)
         {
             bloodParticle.Play();
         }
 
-        // Start fade out and destroy after 4 seconds
         StartCoroutine(FadeOutAndDestroy());
 
         if (manager != null)
@@ -198,10 +199,8 @@ public class EnemyScript : MonoBehaviour
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
 
-        // Wait 3 seconds before starting fade
         yield return new WaitForSeconds(3f);
 
-        // Fade out over 1 second
         if (spriteRenderer != null)
         {
             float elapsed = 0f;
@@ -217,7 +216,6 @@ public class EnemyScript : MonoBehaviour
             }
         }
 
-        // Destroy the gnome
         Destroy(gameObject);
     }
 
@@ -230,36 +228,30 @@ public class EnemyScript : MonoBehaviour
         }
     }
 
-    private void OnCollisionStay2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            PlayerScript player = collision.gameObject.GetComponent<PlayerScript>();
-
-            if (player != null)
-            {
-                // Cooldown Logic for Attacks
-                if (Time.time >= nextAttackTime)
-                {
-                    Attack(player);
-                    // Set the next attack time based on attack speed
-                    nextAttackTime = Time.time + (1f / attackSpeed);
-                }
-            }
-        }
-    }
-
     void Attack(PlayerScript player)
     {
-        Debug.Log($"{gnomeName} hits you for {damage} damage!");
-
-        // Trigger attack animation
         EnemyAnimationController animController = GetComponent<EnemyAnimationController>();
         if (animController != null)
         {
             animController.PlayAttack();
         }
+    }
 
-        player.TakeDamage(damage);
+    // Called by Animation Event
+    public void DealDamage()
+    {
+        if (playerTransform == null) return;
+
+        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+
+        if (distanceToPlayer <= attackRange)
+        {
+            PlayerScript player = playerTransform.GetComponent<PlayerScript>();
+            if (player != null)
+            {
+                player.TakeDamage(damage);
+                Debug.Log($"{gnomeName} hits you for {damage} damage!");
+            }
+        }
     }
 }

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
 
 public class EnemyAnimationController : MonoBehaviour
@@ -6,7 +6,6 @@ public class EnemyAnimationController : MonoBehaviour
     private Animator animator;
     private EnemyScript enemyScript;
 
-    // Animation state names - match your animator
     private const string WALK = "Gnome_Villager_Walk";
     private const string ATTACK = "Gnome_Villager_Attack";
     private const string DEATH = "Gnome_Villager_Death";
@@ -23,15 +22,9 @@ public class EnemyAnimationController : MonoBehaviour
         {
             animator = GetComponentInChildren<Animator>();
         }
-        if (animator == null)
-        {
-            Debug.LogError("Gnome needs an Animator component!");
-            return;
-        }
 
         enemyScript = GetComponent<EnemyScript>();
 
-        // Start with walk animation
         ChangeAnimationState(WALK);
     }
 
@@ -39,33 +32,29 @@ public class EnemyAnimationController : MonoBehaviour
     {
         if (animator == null || enemyScript == null) return;
 
-        // If dead, handle death animations ONCE then stop updating
         if (enemyScript.health <= 0)
         {
             if (!isDead)
             {
                 isDead = true;
+                isAttacking = false;
                 ChangeAnimationState(DEATH);
                 StartCoroutine(HandleDeathAnimation());
             }
-            return; // STOP updating once dead
+            return;
         }
 
-        // Check if attack animation is playing
         if (isAttacking)
         {
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
             if (stateInfo.normalizedTime >= 1.0f)
             {
                 isAttacking = false;
+                ChangeAnimationState(WALK);
             }
-            else
-            {
-                return; // Don't change animation while action is playing
-            }
+            return;
         }
 
-        // Default to walk when alive and not attacking
         if (currentState != WALK)
         {
             ChangeAnimationState(WALK);
@@ -74,18 +63,14 @@ public class EnemyAnimationController : MonoBehaviour
 
     IEnumerator HandleDeathAnimation()
     {
-        // Wait for death animation to finish
-        yield return new WaitForSeconds(0.1f); // Small delay to let animation start
+        yield return new WaitForSeconds(0.1f);
 
         while (animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
         {
             yield return null;
         }
 
-        // Play death idle
         ChangeAnimationState(DEATH_IDLE);
-
-        // Disable this script so Update stops running
         enabled = false;
     }
 
@@ -93,9 +78,8 @@ public class EnemyAnimationController : MonoBehaviour
     {
         if (currentState == newState) return;
 
-        animator.Play(newState);
+        animator.Play(newState, 0, 0f);
         currentState = newState;
-        Debug.Log($"Gnome changed animation to: {newState}");
     }
 
     public void PlayAttack()
@@ -104,7 +88,15 @@ public class EnemyAnimationController : MonoBehaviour
         {
             isAttacking = true;
             ChangeAnimationState(ATTACK);
-            Debug.Log("Gnome playing attack animation");
+        }
+    }
+
+    // Called by Animation Event
+    public void OnAttackHit()
+    {
+        if (enemyScript != null)
+        {
+            enemyScript.DealDamage();
         }
     }
 }
