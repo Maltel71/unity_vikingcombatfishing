@@ -26,19 +26,19 @@ public class EndlessWaveManager : MonoBehaviour
 
     IEnumerator WaveLoop()
     {
+        // Wait one frame to ensure all UI is initialized
+        yield return new WaitForSeconds(0.5f);
+
+        currentWave = 1;
+
         while (true)
         {
-            currentWave++;
-
             // Announce wave
             if (waveAnnouncer != null)
             {
                 Debug.Log("Calling WaveAnnouncer for wave " + currentWave);
                 waveAnnouncer.AnnounceWave(currentWave);
-            }
-            else
-            {
-                Debug.LogError("WaveAnnouncer is NOT assigned in WaveManager!");
+                yield return new WaitForSeconds(2f); // Wait for announcement
             }
 
             int enemiesToSpawn = startingEnemies + (currentWave - 1) * enemiesIncreasePerWave;
@@ -48,6 +48,8 @@ public class EndlessWaveManager : MonoBehaviour
             yield return StartCoroutine(SpawnRoutine(enemiesToSpawn));
 
             yield return new WaitForSeconds(timeBetweenWaves);
+
+            currentWave++; // Increment after wave completes
         }
     }
 

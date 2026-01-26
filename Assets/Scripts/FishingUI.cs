@@ -1,71 +1,130 @@
 using UnityEngine;
-using TMPro;
+using UnityEngine.UI;
 
 public class FishingUI : MonoBehaviour
 {
-    [Header("UI Text Reference")]
-    public TextMeshProUGUI promptText;
+    [Header("UI Icon References")]
+    public Image fishingIcon;
+    public Image enterZoneIcon;
+    public Image waitingIcon;
+    public Image biteIcon;
+    public Image reelingIcon;
 
-    [Header("English Messages - Customize these!")]
-    public string enterZoneMessage = "Press E to fish";
-    public string waitingMessage = "Waiting for a bite...";
-    public string biteMessage = "BITE! Hold E!";
-    public string reelingMessage = "Keep holding E! {0}%";
-
-    [Header("Colors")]
-    public Color normalColor = Color.white;
-    public Color biteColor = Color.yellow;
-    public Color reelingColor = Color.green;
+    [Header("Animation Settings")]
+    public float biteIconPulseSpeed = 2f;
+    public float biteIconMinScale = 0.8f;
+    public float biteIconMaxScale = 1.2f;
+    public float reelingIconScale = 1.3f;
 
     private FishingRod fishingRod;
+    private Vector3 biteIconOriginalScale;
+    private Vector3 reelingIconOriginalScale;
 
     void Start()
     {
         fishingRod = GetComponent<FishingRod>();
 
-        if (promptText != null)
+        // Store original scales
+        if (biteIcon != null)
         {
-            promptText.gameObject.SetActive(false);
+            biteIconOriginalScale = biteIcon.transform.localScale;
         }
+        if (reelingIcon != null)
+        {
+            reelingIconOriginalScale = reelingIcon.transform.localScale;
+        }
+
+        // Hide all icons at start
+        HideAllIcons();
     }
 
     void Update()
     {
-        if (promptText == null || fishingRod == null) return;
+        if (fishingRod == null) return;
 
         if (fishingRod.fishingZone != null && fishingRod.fishingZone.playerInZone)
         {
-            promptText.gameObject.SetActive(true);
-            UpdatePromptMessage();
+            if (fishingIcon != null)
+            {
+                fishingIcon.gameObject.SetActive(true);
+            }
+            UpdateIcons();
         }
         else
         {
-            promptText.gameObject.SetActive(false);
+            HideAllIcons();
         }
     }
 
-    void UpdatePromptMessage()
+    void UpdateIcons()
     {
         if (fishingRod.isReelingIn)
         {
-            float percent = (fishingRod.reelInProgress / fishingRod.reelInDuration) * 100f;
-            promptText.text = string.Format(reelingMessage, percent.ToString("F0"));
-            promptText.color = reelingColor;
+            // Show reeling icon with fill amount and scale
+            ShowOnlyIcon(reelingIcon);
+            if (reelingIcon != null)
+            {
+                reelingIcon.fillAmount = fishingRod.reelInProgress / fishingRod.reelInDuration;
+                reelingIcon.transform.localScale = reelingIconOriginalScale * reelingIconScale;
+            }
         }
         else if (fishingRod.hasBite)
         {
-            promptText.text = biteMessage;
-            promptText.color = biteColor;
+            // Show pulsating bite icon
+            ShowOnlyIcon(biteIcon);
+            if (biteIcon != null)
+            {
+                float scale = Mathf.Lerp(biteIconMinScale, biteIconMaxScale,
+                    (Mathf.Sin(Time.time * biteIconPulseSpeed) + 1f) / 2f);
+                biteIcon.transform.localScale = biteIconOriginalScale * scale;
+            }
         }
         else if (fishingRod.isWaitingForBite)
         {
-            promptText.text = waitingMessage;
-            promptText.color = normalColor;
+            ShowOnlyIcon(waitingIcon);
         }
         else
         {
-            promptText.text = enterZoneMessage;
-            promptText.color = normalColor;
+            ShowOnlyIcon(enterZoneIcon);
+        }
+    }
+
+    void HideAllIcons()
+    {
+        if (fishingIcon != null) fishingIcon.gameObject.SetActive(false);
+        if (enterZoneIcon != null) enterZoneIcon.gameObject.SetActive(false);
+        if (waitingIcon != null) waitingIcon.gameObject.SetActive(false);
+        if (biteIcon != null)
+        {
+            biteIcon.gameObject.SetActive(false);
+            biteIcon.transform.localScale = biteIconOriginalScale;
+        }
+        if (reelingIcon != null)
+        {
+            reelingIcon.gameObject.SetActive(false);
+            reelingIcon.transform.localScale = reelingIconOriginalScale;
+        }
+    }
+
+    void ShowOnlyIcon(Image iconToShow)
+    {
+        if (enterZoneIcon != null) enterZoneIcon.gameObject.SetActive(enterZoneIcon == iconToShow);
+        if (waitingIcon != null) waitingIcon.gameObject.SetActive(waitingIcon == iconToShow);
+        if (biteIcon != null)
+        {
+            bool isActive = biteIcon == iconToShow;
+            biteIcon.gameObject.SetActive(isActive);
+            if (!isActive) biteIcon.transform.localScale = biteIconOriginalScale;
+        }
+        if (reelingIcon != null)
+        {
+            bool isActive = reelingIcon == iconToShow;
+            reelingIcon.gameObject.SetActive(isActive);
+            if (!isActive)
+            {
+                reelingIcon.fillAmount = 0f;
+                reelingIcon.transform.localScale = reelingIconOriginalScale;
+            }
         }
     }
 }
