@@ -4,29 +4,40 @@ using System.Collections.Generic;
 public class FishPile : MonoBehaviour
 {
     [Header("Pile Settings")]
-    public bool keepFishInPile = true;  // Toggle: ska fiskar ligga kvar?
-    public float pileSpacing = 0.3f;    // Avst�nd mellan fiskar
-    public int maxFishInPile = 20;      // Max antal fiskar innan gamla tas bort
+    public bool keepFishInPile = true;
+    public int maxFishInPile = 60;
 
-    [Header("Visual")]
-    public bool stackVertically = false; // Stapla upp�t eller bredvid?
-    public float stackHeight = 0.2f;     // H�jd mellan lager om vertical
+    [Header("Random Placement")]
+    public Collider2D pileAreaCollider;
 
     private List<GameObject> fishInPile = new List<GameObject>();
+
+    void Start()
+    {
+        // Get collider if not assigned
+        if (pileAreaCollider == null)
+        {
+            pileAreaCollider = GetComponent<Collider2D>();
+        }
+
+        if (pileAreaCollider == null)
+        {
+            Debug.LogWarning("FishPile: No collider assigned or found! Add a BoxCollider2D for pile area.");
+        }
+    }
 
     public void AddFishToPile(GameObject fish, int health, int score)
     {
         if (!keepFishInPile)
         {
-            // Om toggle �r av, f�rst�r fisken direkt
             Destroy(fish);
             return;
         }
 
-        // L�gg till i listan
+        // Add to list
         fishInPile.Add(fish);
 
-        // Ta bort �ldsta fisken om vi har f�r m�nga
+        // Remove oldest fish if too many
         if (fishInPile.Count > maxFishInPile)
         {
             GameObject oldestFish = fishInPile[0];
@@ -35,10 +46,10 @@ public class FishPile : MonoBehaviour
                 Destroy(oldestFish);
         }
 
-        // Positionera fisken i h�gen
+        // Position fish randomly in pile area
         ArrangeFish(fish);
 
-        // Inaktivera physics p� fisken s� den stannar kvar
+        // Disable physics
         Rigidbody2D rb = fish.GetComponent<Rigidbody2D>();
         if (rb != null)
         {
@@ -47,7 +58,7 @@ public class FishPile : MonoBehaviour
             rb.bodyType = RigidbodyType2D.Kinematic;
         }
 
-        // Inaktivera collider s� spelaren inte snubblar p� fisken
+        // Disable collider
         Collider2D col = fish.GetComponent<Collider2D>();
         if (col != null)
         {
@@ -60,29 +71,39 @@ public class FishPile : MonoBehaviour
             flyingFish.enabled = false;
         }
 
-        Debug.Log($"Fisk tillagd i h�gen! Total: {fishInPile.Count}");
+        Debug.Log($"Fish added to pile! Total: {fishInPile.Count}");
     }
 
     void ArrangeFish(GameObject fish)
     {
-        int index = fishInPile.Count - 1;
+        Vector3 randomPosition;
 
-        if (stackVertically)
+        if (pileAreaCollider != null)
         {
-            // Stapla upp�t
-            fish.transform.position = transform.position + new Vector3(0, index * stackHeight, 0);
+            // Get random position within collider bounds
+            Bounds bounds = pileAreaCollider.bounds;
+            randomPosition = new Vector3(
+                Random.Range(bounds.min.x, bounds.max.x),
+                Random.Range(bounds.min.y, bounds.max.y),
+                transform.position.z
+            );
         }
         else
         {
-            // L�gg bredvid varandra (som en rad)
-            fish.transform.position = transform.position + new Vector3(index * pileSpacing, 0, 0);
+            // Fallback if no collider
+            randomPosition = transform.position + new Vector3(
+                Random.Range(-0.5f, 0.5f),
+                Random.Range(-0.5f, 0.5f),
+                0
+            );
         }
 
-        // Rotera lite slumpm�ssigt f�r naturlig look (valfritt)
-        fish.transform.rotation = Quaternion.Euler(0, 0, Random.Range(-15f, 15f));
+        fish.transform.position = randomPosition;
+
+        // Random rotation for natural look
+        fish.transform.rotation = Quaternion.Euler(0, 0, Random.Range(-180f, 180f));
     }
 
-    // Rensa hela h�gen (t.ex. n�r spelaren d�r eller niv� b�rjar om)
     public void ClearPile()
     {
         foreach (GameObject fish in fishInPile)
@@ -91,13 +112,20 @@ public class FishPile : MonoBehaviour
                 Destroy(fish);
         }
         fishInPile.Clear();
-        Debug.Log("Fisk-h�gen rensad!");
+        Debug.Log("Fish pile cleared!");
     }
 
-    // F�r att visualisera var h�gen �r i editor
     void OnDrawGizmos()
     {
-        Gizmos.color = Color.green;
-        Gizmos.DrawWireCube(transform.position, new Vector3(0.5f, 0.5f, 0.5f));
+        if (pileAreaCollider != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(pileAreaCollider.bounds.center, pileAreaCollider.bounds.size);
+        }
+        else
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireCube(transform.position, new Vector3(1f, 1f, 0.1f));
+        }
     }
 }
