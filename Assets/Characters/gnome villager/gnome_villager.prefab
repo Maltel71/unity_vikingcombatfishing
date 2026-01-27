@@ -130,17 +130,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 376547db7b1498a4084eb238fee05dfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyScript
-  type: 0
   damage: 10
   health: 100
   gnomeName: 
   attackSpeed: 1
   attackRange: 2.9
-  movementSpeed: 1
+  minMovementSpeed: 0.3
+  maxMovementSpeed: 1
   minSizeMultiplier: 0.8
   maxSizeMultiplier: 1.2
-  minSpeedMultiplier: 0.8
-  maxSpeedMultiplier: 1.2
   manager: {fileID: 0}
   hurtSounds:
   - {fileID: 8300000, guid: 77ffd37e8398a9b4a96180e56da9d6cc, type: 3}

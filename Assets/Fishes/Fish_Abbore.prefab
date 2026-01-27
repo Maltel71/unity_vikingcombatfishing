@@ -139,7 +139,14 @@ MonoBehaviour:
   gravityScale: 2
   minAngularVelocity: -360
   maxAngularVelocity: 360
+  timeUntilGroundLayer: 4
   pickupRangeObject: {fileID: 7680295468825326352}
+  bounceSounds:
+  - {fileID: 8300000, guid: c2d2291a407c3ec41aaab9726f7bd15a, type: 3}
+  bounceVolume: 0.386
+  bounceSoundCooldown: 0.2
+  minBouncePitch: 0.5
+  maxBouncePitch: 1.829
   fishPile: {fileID: 0}
 --- !u!70 &67352816174813328
 CapsuleCollider2D:

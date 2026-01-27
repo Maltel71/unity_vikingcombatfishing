@@ -3,10 +3,7 @@ using System.Collections;
 
 public class EnemyScript : MonoBehaviour
 {
-    public enum GnomeType { Garden, Berserker, Brute }
-
     [Header("Gnome Settings")]
-    public GnomeType type;
     public int damage;
     public int health;
     public string gnomeName;
@@ -17,17 +14,15 @@ public class EnemyScript : MonoBehaviour
     public float attackRange = 1.5f;
 
     [Header("Movement Settings")]
-    public float movementSpeed;
+    public float minMovementSpeed = 0.3f;
+    public float maxMovementSpeed = 0.5f;
+    private float movementSpeed;
 
     [Header("Variation Settings")]
     [Range(0.5f, 2f)]
     public float minSizeMultiplier = 0.8f;
     [Range(0.5f, 2f)]
     public float maxSizeMultiplier = 1.2f;
-    [Range(0.5f, 2f)]
-    public float minSpeedMultiplier = 0.8f;
-    [Range(0.5f, 2f)]
-    public float maxSpeedMultiplier = 1.2f;
 
     [Header("Wave System Connection")]
     public EndlessWaveManager manager;
@@ -70,41 +65,19 @@ public class EnemyScript : MonoBehaviour
 
         nextIdleSoundTime = Time.time + Random.Range(minIdleSoundTime, maxIdleSoundTime);
 
-        // Only set defaults if not configured in Inspector
-        if (movementSpeed == 0f && damage == 0 && string.IsNullOrEmpty(gnomeName))
-        {
-            switch (type)
-            {
-                case GnomeType.Garden:
-                    gnomeName = "C_Common_Gnome";
-                    damage = 10;
-                    movementSpeed = 0.3f;
-                    break;
-                case GnomeType.Berserker:
-                    gnomeName = "C_Berserker_Gnome";
-                    damage = 5;
-                    movementSpeed = 1.5f;
-                    break;
-                case GnomeType.Brute:
-                    gnomeName = "C_Brute_Gnome";
-                    damage = 20;
-                    movementSpeed = 0.1f;
-                    break;
-            }
-        }
-
         ApplyVariations();
     }
 
     void ApplyVariations()
     {
+        // Random size
         float sizeMultiplier = Random.Range(minSizeMultiplier, maxSizeMultiplier);
         transform.localScale *= sizeMultiplier;
 
-        float speedMultiplier = Random.Range(minSpeedMultiplier, maxSpeedMultiplier);
-        movementSpeed *= speedMultiplier;
+        // Random movement speed from range
+        movementSpeed = Random.Range(minMovementSpeed, maxMovementSpeed);
 
-        Debug.Log($"{gnomeName} spawned with size: {sizeMultiplier:F2}x, speed: {speedMultiplier:F2}x");
+        Debug.Log($"{gnomeName} spawned with size: {sizeMultiplier:F2}x, speed: {movementSpeed:F2}");
     }
 
     void Update()

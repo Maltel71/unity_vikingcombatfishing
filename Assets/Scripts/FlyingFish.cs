@@ -20,6 +20,16 @@ public class FlyingFish : MonoBehaviour
     [Header("Pickup Settings")]
     public Transform pickupRangeObject;
 
+    [Header("Bounce Sound Effects")]
+    public AudioClip[] bounceSounds;
+    [Range(0f, 1f)]
+    public float bounceVolume = 1f;
+    public float bounceSoundCooldown = 0.2f;
+    [Range(0.5f, 2f)]
+    public float minBouncePitch = 0.8f;
+    [Range(0.5f, 2f)]
+    public float maxBouncePitch = 1.2f;
+
     [HideInInspector] public FishPile fishPile;
 
     private Rigidbody2D rb;
@@ -28,6 +38,8 @@ public class FlyingFish : MonoBehaviour
     private GameObject playerInRange = null;
     private float spawnTime;
     private bool layerChanged = false;
+    private AudioSource audioSource;
+    private float lastBounceSoundTime = 0f;
 
     void Awake()
     {
@@ -61,6 +73,13 @@ public class FlyingFish : MonoBehaviour
             }
         }
 
+        // Setup audio source
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
         spawnTime = Time.time;
     }
 
@@ -81,9 +100,29 @@ public class FlyingFish : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
+        // Play bounce sound with cooldown
+        if (Time.time >= lastBounceSoundTime + bounceSoundCooldown)
+        {
+            PlayRandomBounceSound();
+            lastBounceSoundTime = Time.time;
+        }
+
         if (collision.gameObject.CompareTag("Ground") && !layerChanged)
         {
             ChangeToGroundLayer();
+        }
+    }
+
+    void PlayRandomBounceSound()
+    {
+        if (bounceSounds.Length > 0 && audioSource != null)
+        {
+            int randomIndex = Random.Range(0, bounceSounds.Length);
+
+            // Randomize pitch
+            audioSource.pitch = Random.Range(minBouncePitch, maxBouncePitch);
+
+            audioSource.PlayOneShot(bounceSounds[randomIndex], bounceVolume);
         }
     }
 
