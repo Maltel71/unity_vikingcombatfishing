@@ -1,11 +1,18 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[System.Serializable]
+public class FishType
+{
+    public GameObject fishPrefab;
+    [Range(0f, 100f)]
+    public float weight = 10f; // Higher weight = more common
+}
+
 public class FishingRod : MonoBehaviour
 {
-    [Header("Fisk Prefabs")]
-    public GameObject aborrePrefab;
-    public GameObject gaddaPrefab;
+    [Header("Fish Types")]
+    public FishType[] fishTypes;
 
     [Header("Napp Settings")]
     public float minBiteTime = 10f;
@@ -172,11 +179,12 @@ public class FishingRod : MonoBehaviour
             animController.PlayCatch();
         }
 
-        bool isPerch = Random.value < 0.6f;
-        GameObject fishPrefab = isPerch ? aborrePrefab : gaddaPrefab;
+        // Select fish based on weighted system
+        GameObject fishPrefab = GetRandomFish();
 
         if (fishPrefab == null)
         {
+            Debug.LogWarning("No fish selected or no fish types configured!");
             ResetFishing();
             return;
         }
@@ -235,6 +243,39 @@ public class FishingRod : MonoBehaviour
         }
 
         ResetFishing();
+    }
+
+    GameObject GetRandomFish()
+    {
+        if (fishTypes == null || fishTypes.Length == 0)
+        {
+            return null;
+        }
+
+        // Calculate total weight
+        float totalWeight = 0f;
+        foreach (FishType fishType in fishTypes)
+        {
+            totalWeight += fishType.weight;
+        }
+
+        // Generate random value
+        float randomValue = Random.Range(0f, totalWeight);
+
+        // Select fish based on weight
+        float currentWeight = 0f;
+        foreach (FishType fishType in fishTypes)
+        {
+            currentWeight += fishType.weight;
+            if (randomValue <= currentWeight)
+            {
+                Debug.Log($"Caught: {fishType.fishPrefab.name} (Weight: {fishType.weight}/{totalWeight})");
+                return fishType.fishPrefab;
+            }
+        }
+
+        // Fallback to first fish
+        return fishTypes[0].fishPrefab;
     }
 
     void LostFish()

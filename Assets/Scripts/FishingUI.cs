@@ -17,9 +17,25 @@ public class FishingUI : MonoBehaviour
     public float reelingIconMinScale = 1.0f;
     public float reelingIconMaxScale = 1.3f;
 
+    [Header("Waiting Icon Animation")]
+    public float waitingIconBobSpeed = 1f;
+    public float waitingIconBobAmount = 10f;
+    public float waitingIconRotateSpeed = 1f;
+    public float waitingIconRotateAmount = 15f;
+
+    [Header("Reeling Icon Animation")]
+    public float reelingIconShakeSpeed = 20f;
+    public float reelingIconShakeMin = -5f;
+    public float reelingIconShakeMax = 5f;
+
     private FishingRod fishingRod;
     private Vector3 biteIconOriginalScale;
     private Vector3 reelingIconOriginalScale;
+    private Vector3 waitingIconOriginalPosition;
+    private Quaternion waitingIconOriginalRotation;
+    private Vector3 reelingIconOriginalPosition;
+    private float nextShakeTime = 0f;
+    private Vector3 currentShakeOffset = Vector3.zero;
 
     void Start()
     {
@@ -33,6 +49,12 @@ public class FishingUI : MonoBehaviour
         if (reelingIcon != null)
         {
             reelingIconOriginalScale = reelingIcon.transform.localScale;
+            reelingIconOriginalPosition = reelingIcon.transform.localPosition;
+        }
+        if (waitingIcon != null)
+        {
+            waitingIconOriginalPosition = waitingIcon.transform.localPosition;
+            waitingIconOriginalRotation = waitingIcon.transform.localRotation;
         }
 
         // Hide all icons at start
@@ -71,6 +93,16 @@ public class FishingUI : MonoBehaviour
                 // Scale up gradually from min to max as reeling progresses
                 float currentScale = Mathf.Lerp(reelingIconMinScale, reelingIconMaxScale, progress);
                 reelingIcon.transform.localScale = reelingIconOriginalScale * currentScale;
+
+                // Shake effect with speed control
+                if (Time.time >= nextShakeTime)
+                {
+                    float shakeX = Random.Range(reelingIconShakeMin, reelingIconShakeMax);
+                    float shakeY = Random.Range(reelingIconShakeMin, reelingIconShakeMax);
+                    currentShakeOffset = new Vector3(shakeX, shakeY, 0);
+                    nextShakeTime = Time.time + (1f / reelingIconShakeSpeed);
+                }
+                reelingIcon.transform.localPosition = reelingIconOriginalPosition + currentShakeOffset;
             }
         }
         else if (fishingRod.hasBite)
@@ -87,6 +119,16 @@ public class FishingUI : MonoBehaviour
         else if (fishingRod.isWaitingForBite)
         {
             ShowOnlyIcon(waitingIcon);
+            if (waitingIcon != null)
+            {
+                // Bob up and down
+                float bobOffset = Mathf.Sin(Time.time * waitingIconBobSpeed) * waitingIconBobAmount;
+                waitingIcon.transform.localPosition = waitingIconOriginalPosition + new Vector3(0, bobOffset, 0);
+
+                // Rotate back and forth
+                float rotationAngle = Mathf.Sin(Time.time * waitingIconRotateSpeed) * waitingIconRotateAmount;
+                waitingIcon.transform.localRotation = waitingIconOriginalRotation * Quaternion.Euler(0, 0, rotationAngle);
+            }
         }
         else
         {
@@ -98,7 +140,12 @@ public class FishingUI : MonoBehaviour
     {
         if (fishingIcon != null) fishingIcon.gameObject.SetActive(false);
         if (enterZoneIcon != null) enterZoneIcon.gameObject.SetActive(false);
-        if (waitingIcon != null) waitingIcon.gameObject.SetActive(false);
+        if (waitingIcon != null)
+        {
+            waitingIcon.gameObject.SetActive(false);
+            waitingIcon.transform.localPosition = waitingIconOriginalPosition;
+            waitingIcon.transform.localRotation = waitingIconOriginalRotation;
+        }
         if (biteIcon != null)
         {
             biteIcon.gameObject.SetActive(false);
@@ -108,13 +155,23 @@ public class FishingUI : MonoBehaviour
         {
             reelingIcon.gameObject.SetActive(false);
             reelingIcon.transform.localScale = reelingIconOriginalScale;
+            reelingIcon.transform.localPosition = reelingIconOriginalPosition;
         }
     }
 
     void ShowOnlyIcon(Image iconToShow)
     {
         if (enterZoneIcon != null) enterZoneIcon.gameObject.SetActive(enterZoneIcon == iconToShow);
-        if (waitingIcon != null) waitingIcon.gameObject.SetActive(waitingIcon == iconToShow);
+        if (waitingIcon != null)
+        {
+            bool isActive = waitingIcon == iconToShow;
+            waitingIcon.gameObject.SetActive(isActive);
+            if (!isActive)
+            {
+                waitingIcon.transform.localPosition = waitingIconOriginalPosition;
+                waitingIcon.transform.localRotation = waitingIconOriginalRotation;
+            }
+        }
         if (biteIcon != null)
         {
             bool isActive = biteIcon == iconToShow;
@@ -129,6 +186,7 @@ public class FishingUI : MonoBehaviour
             {
                 reelingIcon.fillAmount = 0f;
                 reelingIcon.transform.localScale = reelingIconOriginalScale;
+                reelingIcon.transform.localPosition = reelingIconOriginalPosition;
             }
         }
     }
