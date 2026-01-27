@@ -47,8 +47,24 @@ public class FishingRod : MonoBehaviour
     public AudioClip castSound;
     public AudioClip catchSound;
     private AudioSource audioSource;
-    public AudioClip[] gruntSounds;
+
+    [Header("Reeling Sounds")]
+    public AudioClip[] reelingGruntSounds;
+    [Range(0f, 1f)]
     public float gruntVolume = 1f;
+    private int currentGruntIndex = 0;
+
+    public AudioClip[] reelingSFX;
+    [Range(0f, 1f)]
+    public float reelingSFXStartVolume = 0.3f;
+    [Range(0f, 1f)]
+    public float reelingSFXMaxVolume = 1f;
+    private int currentReelingSFXIndex = 0;
+    private AudioSource reelingSFXSource;
+
+    [Header("Fade Out Settings")]
+    [Range(0.1f, 2f)]
+    public float soundFadeOutDuration = 0.5f;
 
     [Header("Animation (Optional)")]
     public Animator playerAnimator;
@@ -60,6 +76,7 @@ public class FishingRod : MonoBehaviour
 
     private Coroutine biteCoroutine;
     private Vector3 originalPlayerPosition;
+    private Coroutine fadeOutCoroutine;
 
     void Start()
     {
@@ -78,6 +95,9 @@ public class FishingRod : MonoBehaviour
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
+
+        // Create second audio source for reeling SFX
+        reelingSFXSource = gameObject.AddComponent<AudioSource>();
     }
 
     void Update()
@@ -124,11 +144,22 @@ public class FishingRod : MonoBehaviour
             LostFish();
         }
 
-        // Play random grunt sound periodically
-        if (isReelingIn && !audioSource.isPlaying && gruntSounds.Length > 0)
+        // Play reeling grunt sounds sequentially
+        if (isReelingIn && !audioSource.isPlaying && reelingGruntSounds.Length > 0)
         {
-            int randomIndex = Random.Range(0, gruntSounds.Length);
-            audioSource.PlayOneShot(gruntSounds[randomIndex], gruntVolume);
+            audioSource.PlayOneShot(reelingGruntSounds[currentGruntIndex], gruntVolume);
+            currentGruntIndex = (currentGruntIndex + 1) % reelingGruntSounds.Length;
+        }
+
+        // Play reeling SFX sounds sequentially (separate from grunts)
+        if (isReelingIn && !reelingSFXSource.isPlaying && reelingSFX.Length > 0)
+        {
+            // Calculate volume based on reel progress
+            float progress = reelInProgress / reelInDuration;
+            float currentVolume = Mathf.Lerp(reelingSFXStartVolume, reelingSFXMaxVolume, progress);
+
+            reelingSFXSource.PlayOneShot(reelingSFX[currentReelingSFXIndex], currentVolume);
+            currentReelingSFXIndex = (currentReelingSFXIndex + 1) % reelingSFX.Length;
         }
     }
 
@@ -149,6 +180,8 @@ public class FishingRod : MonoBehaviour
     {
         isReelingIn = true;
         reelInProgress = 0f;
+        currentGruntIndex = 0; // Reset to start of grunt sequence
+        currentReelingSFXIndex = 0; // Reset to start of reeling SFX sequence
 
         // Force player to face right for reeling animation
         if (playerTransform != null)
@@ -300,6 +333,13 @@ public class FishingRod : MonoBehaviour
         isReelingIn = false;
         isWaitingForBite = false;
         reelInProgress = 0f;
+
+        // Fade out reeling sounds
+        if (fadeOutCoroutine != null)
+        {
+            StopCoroutine(fadeOutCoroutine);
+        }
+        fadeOutCoroutine = StartCoroutine(FadeOutReelingSounds(soundFadeOutDuration));
     }
 
     void PlaySound(AudioClip clip)
@@ -307,6 +347,42 @@ public class FishingRod : MonoBehaviour
         if (clip != null && audioSource != null)
         {
             audioSource.PlayOneShot(clip);
+        }
+    }
+
+    IEnumerator FadeOutReelingSounds(float duration)
+    {
+        float startGruntVolume = audioSource != null ? audioSource.volume : 1f;
+        float startReelVolume = reelingSFXSource != null ? reelingSFXSource.volume : 1f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            if (audioSource != null)
+            {
+                audioSource.volume = Mathf.Lerp(startGruntVolume, 0f, t);
+            }
+            if (reelingSFXSource != null)
+            {
+                reelingSFXSource.volume = Mathf.Lerp(startReelVolume, 0f, t);
+            }
+
+            yield return null;
+        }
+
+        // Stop and reset volume
+        if (audioSource != null)
+        {
+            audioSource.Stop();
+            audioSource.volume = startGruntVolume;
+        }
+        if (reelingSFXSource != null)
+        {
+            reelingSFXSource.Stop();
+            reelingSFXSource.volume = startReelVolume;
         }
     }
 
