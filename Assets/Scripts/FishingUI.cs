@@ -14,7 +14,8 @@ public class FishingUI : MonoBehaviour
     public float biteIconPulseSpeed = 2f;
     public float biteIconMinScale = 0.8f;
     public float biteIconMaxScale = 1.2f;
-    public float reelingIconScale = 1.3f;
+    public float reelingIconMinScale = 1.0f;
+    public float reelingIconMaxScale = 1.3f;
 
     private FishingRod fishingRod;
     private Vector3 biteIconOriginalScale;
@@ -60,12 +61,16 @@ public class FishingUI : MonoBehaviour
     {
         if (fishingRod.isReelingIn)
         {
-            // Show reeling icon with fill amount and scale
+            // Show reeling icon with fill amount and progressive scale
             ShowOnlyIcon(reelingIcon);
             if (reelingIcon != null)
             {
-                reelingIcon.fillAmount = fishingRod.reelInProgress / fishingRod.reelInDuration;
-                reelingIcon.transform.localScale = reelingIconOriginalScale * reelingIconScale;
+                float progress = fishingRod.reelInProgress / fishingRod.reelInDuration;
+                reelingIcon.fillAmount = progress;
+
+                // Scale up gradually from min to max as reeling progresses
+                float currentScale = Mathf.Lerp(reelingIconMinScale, reelingIconMaxScale, progress);
+                reelingIcon.transform.localScale = reelingIconOriginalScale * currentScale;
             }
         }
         else if (fishingRod.hasBite)
