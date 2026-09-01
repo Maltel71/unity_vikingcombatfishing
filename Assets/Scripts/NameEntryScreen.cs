@@ -39,34 +39,36 @@ public class NameEntryScreen : MonoBehaviour
         Image dim = UiKit.CreateImage("Dim", canvas.transform, UiKit.Dim);
         UiKit.Stretch(dim.rectTransform);
 
-        Image panel = UiKit.CreatePanel(canvas.transform, 620f, 420f);
+        RectTransform panelRt;
+        UiKit.CreatePanel(canvas.transform, "Panel", 620f, 420f, out panelRt);
+        Transform panel = panelRt;
 
-        TextMeshProUGUI title = UiKit.CreateText("Title", panel.transform, "NYTT REKORD", 58f, UiKit.Border, font);
+        TextMeshProUGUI title = UiKit.CreateText("Title", panel, "NEW RECORD", 58f, UiKit.Border, font);
         title.fontStyle = FontStyles.Bold;
         title.characterSpacing = 10f;
         UiKit.AnchorTop(title.rectTransform, 0f, -52f, 560f, 80f);
 
         string placementText = placement > 0
-            ? "Plats " + placement + " - " + score + " poang"
-            : score + " poang";
-        TextMeshProUGUI sub = UiKit.CreateText("Subtitle", panel.transform, placementText, 30f, UiKit.TextColor, font);
+            ? "Rank " + placement + " - " + score + " points"
+            : score + " points";
+        TextMeshProUGUI sub = UiKit.CreateText("Subtitle", panel, placementText, 30f, UiKit.TextColor, font);
         UiKit.AnchorTop(sub.rectTransform, 0f, -112f, 560f, 44f);
 
-        TextMeshProUGUI prompt = UiKit.CreateText("Prompt", panel.transform, "Skriv ditt namn", 26f, UiKit.TextDim, font);
+        TextMeshProUGUI prompt = UiKit.CreateText("Prompt", panel, "Enter your name", 26f, UiKit.TextDim, font);
         UiKit.AnchorTop(prompt.rectTransform, 0f, -172f, 560f, 40f);
 
         // Inmatningsfaltet ar bara en ruta med text - vi laser tangenterna sjalva
-        Image field = UiKit.CreateImage("Field", panel.transform, UiKit.Track);
+        Image field = UiKit.CreateImage("Field", panel, UiKit.Track);
         UiKit.AnchorTop(field.rectTransform, 0f, -226f, 480f, 66f);
 
         nameLabel = UiKit.CreateText("NameLabel", field.transform, "", 38f, UiKit.TextColor, font);
         UiKit.Stretch(nameLabel.rectTransform);
 
-        Button doneBtn = UiKit.CreateButton("DoneButton", panel.transform, "Klar", font);
+        Button doneBtn = UiKit.CreateButton("DoneButton", panel, "Done", font);
         UiKit.AnchorTop(doneBtn.GetComponent<RectTransform>(), 0f, -312f, 400f, 62f);
         doneBtn.onClick.AddListener(Confirm);
 
-        TextMeshProUGUI hint = UiKit.CreateText("Hint", panel.transform, "Enter for att spara", 22f, UiKit.TextDim, font);
+        TextMeshProUGUI hint = UiKit.CreateText("Hint", panel, "Press Enter to save", 22f, UiKit.TextDim, font);
         UiKit.AnchorTop(hint.rectTransform, 0f, -368f, 520f, 34f);
 
         UpdateLabel();

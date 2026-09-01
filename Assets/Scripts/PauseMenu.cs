@@ -2,16 +2,18 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
-using System.Text;
 
 /// <summary>
-/// Pausmeny som oppnas med Escape. Bygger hela sitt UI i kod, sa den behover
-/// inte laggas in manuellt i scenen - den skapar sig sjalv i de scener som
-/// star i AutoCreateInScenes.
+/// Pausmeny som oppnas med Escape.
 ///
-/// Innehaller aven fiskguiden, som lases direkt ur FishingRod.fishTypes vid
-/// varje oppning. Andrar du HP eller poang pa en fiskprefab syns det direkt -
-/// inget att uppdatera for hand.
+/// TVA LAGEN:
+/// 1. Ligger menyn i scenen (referenserna nedan ar ifyllda) anvands den rakt av.
+///    Sa far du riktiga GameObjects i Hierarchy som du kan flytta och styla om.
+///    Skapa den med menyn: Tools > Ragnar > Skapa pausmeny i scenen
+/// 2. Ar referenserna tomma bygger scriptet menyn i kod vid start, som reserv,
+///    sa spelet aldrig star utan pausmeny.
+///
+/// Fiskguiden fylls alltid i vid runtime fran FishingRod.fishTypes, oavsett lage.
 /// </summary>
 public class PauseMenu : MonoBehaviour
 {
@@ -24,19 +26,29 @@ public class PauseMenu : MonoBehaviour
     [Header("Beteende")]
     public KeyCode toggleKey = KeyCode.Escape;
 
-    // Scener dar pausmenyn ska skapas automatiskt
+    [Header("UI-referenser")]
+    [Tooltip("Canvasen som gommer/visar hela menyn. Ar den tom byggs menyn i kod vid start.")]
+    public GameObject menuRoot;
+    public GameObject mainPanel;
+    public GameObject guidePanel;
+    public Slider volumeSlider;
+    public TextMeshProUGUI volumeValueLabel;
+    [Tooltip("Tom container som fiskraderna laggs i. Rensas och fylls varje gang guiden oppnas.")]
+    public RectTransform guideRows;
+
+    [Header("Knappar")]
+    public Button guideButton;
+    public Button resumeButton;
+    public Button quitButton;
+    public Button backButton;
+
+    // Scener dar pausmenyn ska skapas automatiskt om ingen finns
     private static readonly string[] AutoCreateInScenes = { "MainScene" };
 
-    private GameObject root;
-    private GameObject mainPanel;
-    private GameObject guidePanel;
-    private Transform guideRows;
-    private Slider volumeSlider;
-    private TextMeshProUGUI volumeValueLabel;
     private TMP_FontAsset gameFont;
 
     // ---------------------------------------------------------------
-    // Bootstrap - skapar menyn automatiskt nar ratt scen laddas
+    // Bootstrap - skapar menyn automatiskt om scenen saknar en
     // ---------------------------------------------------------------
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -76,7 +88,14 @@ public class PauseMenu : MonoBehaviour
     void Start()
     {
         gameFont = UiKit.FindGameFont();
-        BuildUI();
+
+        // Ingen meny utlagd i scenen - bygg en i kod som reserv
+        if (menuRoot == null)
+        {
+            BuildInto(transform);
+        }
+
+        HookUpButtons();
         SetVisible(false);
 
         VolumeSettings.Apply(VolumeSettings.Load());
@@ -111,6 +130,35 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
+    void HookUpButtons()
+    {
+        if (guideButton != null)
+        {
+            guideButton.onClick.RemoveListener(OpenGuide);
+            guideButton.onClick.AddListener(OpenGuide);
+        }
+        if (backButton != null)
+        {
+            backButton.onClick.RemoveListener(CloseGuide);
+            backButton.onClick.AddListener(CloseGuide);
+        }
+        if (resumeButton != null)
+        {
+            resumeButton.onClick.RemoveListener(Resume);
+            resumeButton.onClick.AddListener(Resume);
+        }
+        if (quitButton != null)
+        {
+            quitButton.onClick.RemoveListener(QuitToMainMenu);
+            quitButton.onClick.AddListener(QuitToMainMenu);
+        }
+        if (volumeSlider != null)
+        {
+            volumeSlider.onValueChanged.RemoveListener(OnVolumeChanged);
+            volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
+        }
+    }
+
     // ---------------------------------------------------------------
     // Kommandon
     // ---------------------------------------------------------------
@@ -138,9 +186,12 @@ public class PauseMenu : MonoBehaviour
         SceneManager.LoadScene(mainMenuSceneName);
     }
 
+    public void OpenGuide() { ShowGuide(true); }
+    public void CloseGuide() { ShowGuide(false); }
+
     void SetVisible(bool visible)
     {
-        if (root != null) root.SetActive(visible);
+        if (menuRoot != null) menuRoot.SetActive(visible);
     }
 
     void ShowGuide(bool show)
@@ -170,95 +221,100 @@ public class PauseMenu : MonoBehaviour
     }
 
     // ---------------------------------------------------------------
-    // UI-bygge
+    // Bygge - anvands bade av reservlaget och av editorverktyget
     // ---------------------------------------------------------------
 
-    void BuildUI()
+    /// <summary>
+    /// Bygger hela menyn som riktiga GameObjects under `parent` och fyller i
+    /// referenserna ovan. Anropas av Tools > Ragnar > Skapa pausmeny i scenen.
+    /// </summary>
+    public void BuildInto(Transform parent)
     {
+        if (gameFont == null) gameFont = UiKit.FindGameFont();
+
         UiKit.EnsureEventSystem();
 
-        root = UiKit.CreateCanvas("PauseMenuCanvas", transform, 500);
+        menuRoot = UiKit.CreateCanvas("PauseMenuCanvas", parent, 500);
 
-        Image dim = UiKit.CreateImage("Dim", root.transform, UiKit.Dim);
+        Image dim = UiKit.CreateImage("Dim", menuRoot.transform, UiKit.Dim);
         UiKit.Stretch(dim.rectTransform);
 
         BuildMainPanel();
         BuildGuidePanel();
-        ShowGuide(false);
+
+        mainPanel.SetActive(true);
+        guidePanel.SetActive(false);
     }
 
     void BuildMainPanel()
     {
-        Image panel = UiKit.CreatePanel(root.transform, 552f, 540f);
-        mainPanel = panel.gameObject;
+        RectTransform content;
+        mainPanel = UiKit.CreatePanel(menuRoot.transform, "MainPanel", 552f, 540f, out content);
 
-        TextMeshProUGUI title = UiKit.CreateText("Title", panel.transform, "PAUS", 64f, UiKit.Border, gameFont);
+        TextMeshProUGUI title = UiKit.CreateText("Title", content, "PAUSE", 64f, UiKit.Border, gameFont);
         title.fontStyle = FontStyles.Bold;
         title.characterSpacing = 12f;
         UiKit.AnchorTop(title.rectTransform, 0f, -46f, 480f, 80f);
 
-        TextMeshProUGUI volLabel = UiKit.CreateText("VolumeLabel", panel.transform, "Volym", 32f, UiKit.TextColor, gameFont);
+        TextMeshProUGUI volLabel = UiKit.CreateText("VolumeLabel", content, "Volume", 32f, UiKit.TextColor, gameFont);
         volLabel.alignment = TextAlignmentOptions.Left;
         UiKit.AnchorTop(volLabel.rectTransform, -110f, -150f, 240f, 44f);
 
-        volumeValueLabel = UiKit.CreateText("VolumeValue", panel.transform, "75%", 32f, UiKit.Border, gameFont);
+        volumeValueLabel = UiKit.CreateText("VolumeValue", content, "75%", 32f, UiKit.Border, gameFont);
         volumeValueLabel.alignment = TextAlignmentOptions.Right;
         UiKit.AnchorTop(volumeValueLabel.rectTransform, 150f, -150f, 160f, 44f);
 
-        volumeSlider = UiKit.CreateSlider("VolumeSlider", panel.transform);
+        volumeSlider = UiKit.CreateSlider("VolumeSlider", content);
         UiKit.AnchorTop(volumeSlider.GetComponent<RectTransform>(), 0f, -205f, 440f, 34f);
-        volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
 
-        Button guideBtn = UiKit.CreateButton("GuideButton", panel.transform, "Fiskguide", gameFont);
-        UiKit.AnchorTop(guideBtn.GetComponent<RectTransform>(), 0f, -288f, 400f, 64f);
-        guideBtn.onClick.AddListener(delegate { ShowGuide(true); });
+        guideButton = UiKit.CreateButton("GuideButton", content, "Fish Guide", gameFont);
+        UiKit.AnchorTop(guideButton.GetComponent<RectTransform>(), 0f, -288f, 400f, 64f);
 
-        Button resumeBtn = UiKit.CreateButton("ResumeButton", panel.transform, "Fortsatt", gameFont);
-        UiKit.AnchorTop(resumeBtn.GetComponent<RectTransform>(), 0f, -366f, 400f, 64f);
-        resumeBtn.onClick.AddListener(Resume);
+        resumeButton = UiKit.CreateButton("ResumeButton", content, "Resume", gameFont);
+        UiKit.AnchorTop(resumeButton.GetComponent<RectTransform>(), 0f, -366f, 400f, 64f);
 
-        Button quitBtn = UiKit.CreateButton("QuitButton", panel.transform, "Till huvudmenyn", gameFont);
-        UiKit.AnchorTop(quitBtn.GetComponent<RectTransform>(), 0f, -444f, 400f, 64f);
-        quitBtn.onClick.AddListener(QuitToMainMenu);
+        quitButton = UiKit.CreateButton("QuitButton", content, "Quit", gameFont);
+        UiKit.AnchorTop(quitButton.GetComponent<RectTransform>(), 0f, -444f, 400f, 64f);
 
-        TextMeshProUGUI hint = UiKit.CreateText("Hint", panel.transform, "Esc for att stanga", 22f, UiKit.TextDim, gameFont);
+        TextMeshProUGUI hint = UiKit.CreateText("Hint", content, "Esc to close", 22f, UiKit.TextDim, gameFont);
         UiKit.AnchorTop(hint.rectTransform, 0f, -508f, 500f, 34f);
     }
 
     void BuildGuidePanel()
     {
-        Image panel = UiKit.CreatePanel(root.transform, 760f, 640f);
-        guidePanel = panel.gameObject;
+        RectTransform content;
+        guidePanel = UiKit.CreatePanel(menuRoot.transform, "GuidePanel", 760f, 640f, out content);
 
-        TextMeshProUGUI title = UiKit.CreateText("Title", panel.transform, "FISKGUIDE", 52f, UiKit.Border, gameFont);
+        TextMeshProUGUI title = UiKit.CreateText("Title", content, "Fish Guide", 52f, UiKit.Border, gameFont);
         title.fontStyle = FontStyles.Bold;
         title.characterSpacing = 10f;
         UiKit.AnchorTop(title.rectTransform, 0f, -46f, 700f, 70f);
 
-        // Kolumnrubriker
-        BuildRow(panel.transform, "Header", -104f, "Fangst", "HP", "Poang", "Chans", UiKit.Border, 26f);
+        BuildRow(content, "Header", -104f, "Catch", "HP", "Points", "Chance", UiKit.Border, 26f);
 
-        Image line = UiKit.CreateImage("HeaderLine", panel.transform, UiKit.Border);
+        Image line = UiKit.CreateImage("HeaderLine", content, UiKit.Border);
         UiKit.AnchorTop(line.rectTransform, 0f, -124f, 680f, 2f);
 
         GameObject rows = new GameObject("Rows", typeof(RectTransform));
-        rows.transform.SetParent(panel.transform, false);
-        UiKit.AnchorTop(rows.GetComponent<RectTransform>(), 0f, -136f, 700f, 1f);
-        guideRows = rows.transform;
+        rows.transform.SetParent(content, false);
+        guideRows = rows.GetComponent<RectTransform>();
+        UiKit.AnchorTop(guideRows, 0f, -136f, 700f, 1f);
 
-        Button backBtn = UiKit.CreateButton("BackButton", panel.transform, "Tillbaka", gameFont);
-        UiKit.AnchorTop(backBtn.GetComponent<RectTransform>(), 0f, -578f, 400f, 62f);
-        backBtn.onClick.AddListener(delegate { ShowGuide(false); });
+        backButton = UiKit.CreateButton("BackButton", content, "Back", gameFont);
+        UiKit.AnchorTop(backButton.GetComponent<RectTransform>(), 0f, -578f, 400f, 62f);
     }
 
-    /// <summary>Bygger om listan fran spelets faktiska fiskdata.</summary>
+    // ---------------------------------------------------------------
+    // Fiskguidens innehall - lases alltid fran spelets faktiska data
+    // ---------------------------------------------------------------
+
     void BuildGuideRows()
     {
         if (guideRows == null) return;
 
         for (int i = guideRows.childCount - 1; i >= 0; i--)
         {
-            // Destroy sker forst i slutet av framen - gom raderna direkt
+            // Destroy sker forst i slutet av framen - gom raden direkt
             // sa gamla och nya inte ritas ovanpa varandra en frame
             GameObject old = guideRows.GetChild(i).gameObject;
             old.SetActive(false);
@@ -268,29 +324,24 @@ public class PauseMenu : MonoBehaviour
         FishingRod rod = FindFirstObjectByType<FishingRod>();
         if (rod == null || rod.fishTypes == null || rod.fishTypes.Length == 0)
         {
-            TextMeshProUGUI empty = UiKit.CreateText("Empty", guideRows, "Ingen fisk konfigurerad", 26f, UiKit.TextDim, gameFont);
+            TextMeshProUGUI empty = UiKit.CreateText("Empty", guideRows, "No fish configured", 26f, UiKit.TextDim, gameFont);
             UiKit.AnchorTop(empty.rectTransform, 0f, -40f, 680f, 40f);
             return;
         }
 
-        // Total vikt for att kunna visa chansen i procent
         float totalWeight = 0f;
-        foreach (FishType ft in rod.fishTypes)
-        {
-            if (ft == null || ft.fishPrefab == null) continue;
-            totalWeight += Mathf.Max(0f, ft.weight);
-        }
-
         int count = 0;
         foreach (FishType ft in rod.fishTypes)
         {
             if (ft == null || ft.fishPrefab == null) continue;
+            totalWeight += Mathf.Max(0f, ft.weight);
             count++;
         }
 
-        // Krymp raderna om listan vaxer sa den alltid faar plats
+        // Krymp raderna om listan vaxer sa den alltid far plats
         float rowHeight = count > 12 ? 400f / count : 34f;
         float y = -rowHeight * 0.5f - 4f;
+        int index = 0;
 
         foreach (FishType ft in rod.fishTypes)
         {
@@ -309,8 +360,9 @@ public class PauseMenu : MonoBehaviour
             bool junk = fish != null && fish.scoreValue <= 0 && fish.healthValue <= 0;
             Color color = junk ? UiKit.TextDim : UiKit.TextColor;
 
-            BuildRow(guideRows, "Row" + count, y, name, hp, score, chance, color, rowHeight > 30f ? 25f : 20f);
+            BuildRow(guideRows, "Row" + index, y, name, hp, score, chance, color, rowHeight > 30f ? 25f : 20f);
             y -= rowHeight;
+            index++;
         }
     }
 

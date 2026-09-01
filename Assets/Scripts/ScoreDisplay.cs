@@ -122,7 +122,7 @@ public class ScoreDisplay : MonoBehaviour
 
         if (showBossCount && player.bossesKilled > 0)
         {
-            line += player.bossesKilled == 1 ? "  (1 boss)" : "  (" + player.bossesKilled + " bossar)";
+            line += player.bossesKilled == 1 ? "  (1 boss)" : "  (" + player.bossesKilled + " bosses)";
         }
 
         return line;

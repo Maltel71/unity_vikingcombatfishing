@@ -167,16 +167,29 @@ public static class UiKit
         return slider;
     }
 
-    /// <summary>Panel med guldram. Returnerar panelen (ramen ligger bakom).</summary>
-    public static Image CreatePanel(Transform parent, float width, float height)
+    /// <summary>
+    /// Panel med guldram. Ramen och panelen laggs i EN gemensam grupp, sa att
+    /// SetActive pa gruppen gommer bada. (Lag de som syskon forsvann bara panelen
+    /// nar man gomde den, och ramen blev kvar som en stor guldruta over allt annat.)
+    /// Returnerar gruppen. `content` ar rect:en man haller innehallet i.
+    /// </summary>
+    public static GameObject CreatePanel(Transform parent, string name, float width, float height,
+                                         out RectTransform content)
     {
-        Image border = CreateImage("PanelBorder", parent, Border);
-        Center(border.rectTransform, width + 8f, height + 8f);
+        GameObject group = new GameObject(name, typeof(RectTransform));
+        group.transform.SetParent(parent, false);
+        Center(group.GetComponent<RectTransform>(), width + 8f, height + 8f);
 
-        Image panel = CreateImage("Panel", parent, Panel);
-        Center(panel.rectTransform, width, height);
+        Image border = CreateImage("Border", group.transform, Border);
+        Stretch(border.rectTransform);
 
-        return panel;
+        Image panel = CreateImage("Panel", group.transform, Panel);
+        Stretch(panel.rectTransform);
+        panel.rectTransform.offsetMin = new Vector2(4f, 4f);
+        panel.rectTransform.offsetMax = new Vector2(-4f, -4f);
+
+        content = panel.rectTransform;
+        return group;
     }
 
 
