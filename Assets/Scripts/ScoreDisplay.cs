@@ -5,6 +5,12 @@ public class ScoreDisplay : MonoBehaviour
 {
     public TextMeshProUGUI scoreText;
 
+    [Header("Blodspengar")]
+    [Tooltip("Egen text for blodspengarna. Lamnas den tom skrivs de pa rad tva i scoreText.")]
+    public TextMeshProUGUI bloodText;
+    [Tooltip("Visa antal dodade bossar inom parentes.")]
+    public bool showBossCount = true;
+
     [Header("Animation Settings")]
     public float bounceScale = 1.3f;
     public float bounceDuration = 0.3f;
@@ -19,6 +25,7 @@ public class ScoreDisplay : MonoBehaviour
 
     private PlayerScript player;
     private int lastScore = 0;
+    private int lastBlood = 0;
     private Vector3 originalScale;
     private float bounceTimer = 0f;
     private bool isBouncing = false;
@@ -31,7 +38,7 @@ public class ScoreDisplay : MonoBehaviour
             scoreText = GetComponent<TextMeshProUGUI>();
         }
 
-        player = FindObjectOfType<PlayerScript>();
+        player = FindFirstObjectByType<PlayerScript>();
 
         if (scoreText != null)
         {
@@ -41,6 +48,7 @@ public class ScoreDisplay : MonoBehaviour
         if (player != null)
         {
             lastScore = player.playerScore;
+            lastBlood = player.bloodMoney;
         }
 
         // Setup audio source
@@ -62,7 +70,23 @@ public class ScoreDisplay : MonoBehaviour
                 lastScore = player.playerScore;
             }
 
-            scoreText.text = "Score: " + player.playerScore;
+            if (player.bloodMoney != lastBlood)
+            {
+                lastBlood = player.bloodMoney;
+            }
+
+            string blood = BuildBloodLine();
+
+            if (bloodText != null)
+            {
+                scoreText.text = "Score: " + player.playerScore;
+                bloodText.text = blood;
+            }
+            else
+            {
+                // Ingen egen text tilldelad - lagg blodspengarna pa rad tva
+                scoreText.text = "Score: " + player.playerScore + "\n" + blood;
+            }
 
             // Handle bounce animation
             if (isBouncing)
@@ -90,6 +114,18 @@ public class ScoreDisplay : MonoBehaviour
                 }
             }
         }
+    }
+
+    string BuildBloodLine()
+    {
+        string line = "Blood: " + player.bloodMoney;
+
+        if (showBossCount && player.bossesKilled > 0)
+        {
+            line += player.bossesKilled == 1 ? "  (1 boss)" : "  (" + player.bossesKilled + " bossar)";
+        }
+
+        return line;
     }
 
     void OnScoreChanged()

@@ -75,7 +75,6 @@ public class FishingRod : MonoBehaviour
     public Transform pickupRangeObject;
 
     private Coroutine biteCoroutine;
-    private Vector3 originalPlayerPosition;
     private Coroutine fadeOutCoroutine;
 
     void Start()
@@ -87,7 +86,7 @@ public class FishingRod : MonoBehaviour
 
         if (fishPile == null)
         {
-            fishPile = FindObjectOfType<FishPile>();
+            fishPile = FindFirstObjectByType<FishPile>();
         }
 
         audioSource = GetComponent<AudioSource>();
@@ -102,6 +101,8 @@ public class FishingRod : MonoBehaviour
 
     void Update()
     {
+        if (PauseMenu.IsPaused) return;
+
         if (fishingZone == null || !fishingZone.playerInZone)
         {
             if (biteCoroutine != null || isReelingIn)
@@ -195,9 +196,7 @@ public class FishingRod : MonoBehaviour
             // Teleport player to reeling position if set
             if (reelingPosition != null)
             {
-                originalPlayerPosition = playerTransform.position;
                 playerTransform.position = reelingPosition.position;
-                Debug.Log("Player teleported to reeling position");
             }
         }
     }
@@ -206,7 +205,9 @@ public class FishingRod : MonoBehaviour
     {
         PlaySound(catchSound);
 
-        PlayerAnimationController animController = playerTransform.GetComponent<PlayerAnimationController>();
+        PlayerAnimationController animController = playerTransform != null
+            ? playerTransform.GetComponent<PlayerAnimationController>()
+            : null;
         if (animController != null)
         {
             animController.PlayCatch();
@@ -233,7 +234,7 @@ public class FishingRod : MonoBehaviour
         }
         else
         {
-            spawnPos = playerTransform.position;
+            spawnPos = playerTransform != null ? playerTransform.position : transform.position;
         }
 
         GameObject fish = Instantiate(fishPrefab, spawnPos, Quaternion.identity);
@@ -255,8 +256,9 @@ public class FishingRod : MonoBehaviour
         float randomUpwardForce = Random.Range(minUpwardForce, maxUpwardForce);
         float randomHorizontalForce = Random.Range(minHorizontalForce, maxHorizontalForce);
 
-        // Use waterSpawnPoint's rotation to determine direction
-        Vector2 direction = waterSpawnPoint.right;
+        // Use waterSpawnPoint's rotation to determine direction.
+        // Saknas punkten kastas fisken at hoger som fallback istallet for att krascha.
+        Vector2 direction = waterSpawnPoint != null ? (Vector2)waterSpawnPoint.right : Vector2.right;
 
         Vector2 force = new Vector2(
             direction.x * randomHorizontalForce,
@@ -264,10 +266,6 @@ public class FishingRod : MonoBehaviour
         );
 
         rb.AddForce(force, ForceMode2D.Impulse);
-
-        Debug.Log($"🚀 KASTA FISK:");
-        Debug.Log($"   Direction from rotation: {direction}");
-        Debug.Log($"   Force: X={force.x}, Y={force.y}");
 
         FlyingFish flyingFish = fish.GetComponent<FlyingFish>();
         if (flyingFish != null && fishPile != null)
@@ -285,11 +283,18 @@ public class FishingRod : MonoBehaviour
             return null;
         }
 
-        // Calculate total weight
+        // Rakna ihop vikten - hoppa over tomma slots i inspektorn
         float totalWeight = 0f;
         foreach (FishType fishType in fishTypes)
         {
-            totalWeight += fishType.weight;
+            if (fishType == null || fishType.fishPrefab == null) continue;
+            totalWeight += Mathf.Max(0f, fishType.weight);
+        }
+
+        if (totalWeight <= 0f)
+        {
+            Debug.LogWarning("FishingRod: fishTypes innehaller inga giltiga prefabs med vikt > 0!");
+            return null;
         }
 
         // Generate random value
@@ -299,16 +304,21 @@ public class FishingRod : MonoBehaviour
         float currentWeight = 0f;
         foreach (FishType fishType in fishTypes)
         {
-            currentWeight += fishType.weight;
+            if (fishType == null || fishType.fishPrefab == null) continue;
+            currentWeight += Mathf.Max(0f, fishType.weight);
             if (randomValue <= currentWeight)
             {
-                Debug.Log($"Caught: {fishType.fishPrefab.name} (Weight: {fishType.weight}/{totalWeight})");
                 return fishType.fishPrefab;
             }
         }
 
-        // Fallback to first fish
-        return fishTypes[0].fishPrefab;
+        // Fallback: forsta giltiga prefaben
+        foreach (FishType fishType in fishTypes)
+        {
+            if (fishType != null && fishType.fishPrefab != null) return fishType.fishPrefab;
+        }
+
+        return null;
     }
 
     void LostFish()

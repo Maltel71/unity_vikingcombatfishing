@@ -4,6 +4,7 @@ using System.Collections.Generic;
 public class AttackCollider : MonoBehaviour
 {
     private List<EnemyScript> enemiesInRange = new List<EnemyScript>();
+    private readonly List<EnemyScript> hitBuffer = new List<EnemyScript>();
     private Collider2D attackCollider;
 
     void Awake()
@@ -42,15 +43,21 @@ public class AttackCollider : MonoBehaviour
 
     public void ActivateAttack(float damage)
     {
-        // Hit all enemies currently in range
-        foreach (EnemyScript enemy in enemiesInRange)
+        // Kopiera listan innan vi slar. TakeDamage kan doda fienden, vilket
+        // stanger av dess collider -> OnTriggerExit2D -> listan andras mitt i
+        // loopen och kastar "Collection was modified".
+        hitBuffer.Clear();
+        hitBuffer.AddRange(enemiesInRange);
+
+        foreach (EnemyScript enemy in hitBuffer)
         {
             if (enemy != null)
             {
                 enemy.TakeDamage((int)damage);
-                Debug.Log($"Hit {enemy.gnomeName} for {damage} damage!");
             }
         }
+
+        hitBuffer.Clear();
     }
 
     public void EnableCollider()

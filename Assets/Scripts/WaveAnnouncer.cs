@@ -41,13 +41,21 @@ public class WaveAnnouncer : MonoBehaviour
         originalScale = transform.localScale;
         canvasGroup.alpha = 0f;
 
-        Debug.Log("WaveAnnouncer initialized successfully on " + gameObject.name);
     }
 
     public void AnnounceWave(int waveNumber)
     {
-        Debug.Log("AnnounceWave called for wave " + waveNumber);
+        Announce($"Wave {waveNumber}");
+    }
 
+    // Overload for fri text, t.ex. elitfienden "MUSCLE"
+    public void AnnounceWave(string message)
+    {
+        Announce(message);
+    }
+
+    void Announce(string message)
+    {
         if (canvasGroup == null || waveText == null)
         {
             Debug.LogError("WaveAnnouncer: Missing references!");
@@ -55,13 +63,12 @@ public class WaveAnnouncer : MonoBehaviour
         }
 
         StopAllCoroutines();
-        StartCoroutine(ShowWaveAnnouncement(waveNumber));
+        StartCoroutine(ShowWaveAnnouncement(message));
     }
 
-    IEnumerator ShowWaveAnnouncement(int waveNumber)
+    IEnumerator ShowWaveAnnouncement(string message)
     {
-        waveText.text = $"Wave {waveNumber}";
-        Debug.Log("Starting wave announcement animation for wave " + waveNumber);
+        waveText.text = message;
 
         float elapsed = 0f;
 
@@ -79,7 +86,6 @@ public class WaveAnnouncer : MonoBehaviour
 
         canvasGroup.alpha = 1f;
         transform.localScale = originalScale * scaleMultiplier;
-        Debug.Log("Wave announcement visible");
 
         // Hold
         yield return new WaitForSeconds(holdDuration);
@@ -100,6 +106,5 @@ public class WaveAnnouncer : MonoBehaviour
 
         canvasGroup.alpha = 0f;
         transform.localScale = originalScale;
-        Debug.Log("Wave announcement hidden");
     }
 }

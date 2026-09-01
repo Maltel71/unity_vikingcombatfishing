@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class FishingZone : MonoBehaviour
 {
@@ -10,7 +10,6 @@ public class FishingZone : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerInZone = true;
-            Debug.Log("Spelaren är vid vattnet! Tryck E för att fiska.");
         }
     }
 
@@ -19,7 +18,6 @@ public class FishingZone : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             playerInZone = false;
-            Debug.Log("Spelaren lämnade fiskezonen.");
         }
     }
 }

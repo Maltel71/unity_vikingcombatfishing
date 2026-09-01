@@ -70,8 +70,6 @@ public class FishPile : MonoBehaviour
         {
             flyingFish.enabled = false;
         }
-
-        Debug.Log($"Fish added to pile! Total: {fishInPile.Count}");
     }
 
     void ArrangeFish(GameObject fish)
@@ -112,7 +110,6 @@ public class FishPile : MonoBehaviour
                 Destroy(fish);
         }
         fishInPile.Clear();
-        Debug.Log("Fish pile cleared!");
     }
 
     void OnDrawGizmos()

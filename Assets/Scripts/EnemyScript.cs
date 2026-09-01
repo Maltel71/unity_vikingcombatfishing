@@ -27,6 +27,13 @@ public class EnemyScript : MonoBehaviour
     [Header("Wave System Connection")]
     public EndlessWaveManager manager;
 
+    // Satts av EndlessWaveManager vid spawn. Elitfiender (Muscle) raknas separat.
+    [HideInInspector] public bool isElite = false;
+    [HideInInspector] public float eliteHealthMultiplier = 1f;
+    [HideInInspector] public float eliteDamageMultiplier = 1f;
+    [HideInInspector] public float eliteSizeMultiplier = 1.6f;
+    [HideInInspector] public float eliteSpeedMultiplier = 1.5f;
+
     [Header("Sound Effects")]
     public AudioClip[] hurtSounds;
     [Range(0f, 1f)]
@@ -43,6 +50,8 @@ public class EnemyScript : MonoBehaviour
 
     private AudioSource audioSource;
     private Transform playerTransform;
+    private bool isDying = false;
+    private EnemyAnimationController animController;
 
     void Start()
     {
@@ -63,6 +72,8 @@ public class EnemyScript : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
 
+        animController = GetComponent<EnemyAnimationController>();
+
         nextIdleSoundTime = Time.time + Random.Range(minIdleSoundTime, maxIdleSoundTime);
 
         ApplyVariations();
@@ -70,6 +81,16 @@ public class EnemyScript : MonoBehaviour
 
     void ApplyVariations()
     {
+        if (isElite)
+        {
+            // Eliten ska se likadan ut varje gang - ingen slump, bara storre och tuffare
+            transform.localScale *= eliteSizeMultiplier;
+            movementSpeed = Random.Range(minMovementSpeed, maxMovementSpeed) * eliteSpeedMultiplier;
+            health = Mathf.RoundToInt(health * eliteHealthMultiplier);
+            damage = Mathf.RoundToInt(damage * eliteDamageMultiplier);
+            return;
+        }
+
         // Random size
         float sizeMultiplier = Random.Range(minSizeMultiplier, maxSizeMultiplier);
         transform.localScale *= sizeMultiplier;
@@ -77,7 +98,6 @@ public class EnemyScript : MonoBehaviour
         // Random movement speed from range
         movementSpeed = Random.Range(minMovementSpeed, maxMovementSpeed);
 
-        Debug.Log($"{gnomeName} spawned with size: {sizeMultiplier:F2}x, speed: {movementSpeed:F2}");
     }
 
     void Update()
@@ -87,7 +107,6 @@ public class EnemyScript : MonoBehaviour
 
         if (playerTransform == null)
         {
-            Debug.LogWarning("Gnome is lost! It can't find anything with the 'Player' tag.");
             return;
         }
 
@@ -121,6 +140,8 @@ public class EnemyScript : MonoBehaviour
 
     public void TakeDamage(int amount)
     {
+        if (isDying) return;
+
         health -= amount;
 
         ParticleSystem bloodParticle = GetComponentInChildren<ParticleSystem>();
@@ -143,6 +164,9 @@ public class EnemyScript : MonoBehaviour
 
     void Die()
     {
+        if (isDying) return;
+        isDying = true;
+
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb != null)
         {
@@ -167,7 +191,7 @@ public class EnemyScript : MonoBehaviour
 
         if (manager != null)
         {
-            manager.OnGnomeKilled();
+            manager.OnEnemyKilled(this);
         }
     }
 
@@ -206,10 +230,16 @@ public class EnemyScript : MonoBehaviour
 
     void Attack(PlayerScript player)
     {
-        EnemyAnimationController animController = GetComponent<EnemyAnimationController>();
         if (animController != null)
         {
+            // Skadan kommer via Animation Event -> DealDamage()
             animController.PlayAttack();
+        }
+        else
+        {
+            // Fiender utan Animator (t.ex. en enkel sprite-prefab) slar direkt,
+            // annars skulle de aldrig gora nagon skada alls.
+            DealDamage();
         }
     }
 
@@ -226,7 +256,6 @@ public class EnemyScript : MonoBehaviour
             if (player != null)
             {
                 player.TakeDamage(damage);
-                Debug.Log($"{gnomeName} hits you for {damage} damage!");
             }
         }
     }

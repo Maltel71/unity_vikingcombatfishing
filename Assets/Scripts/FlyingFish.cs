@@ -85,6 +85,8 @@ public class FlyingFish : MonoBehaviour
 
     void Update()
     {
+        if (PauseMenu.IsPaused) return;
+
         // Check for pickup input
         if (canPickup && Input.GetKeyDown(KeyCode.E))
         {
@@ -133,7 +135,6 @@ public class FlyingFish : MonoBehaviour
         if (groundFishLayer != -1)
         {
             gameObject.layer = groundFishLayer;
-            Debug.Log($"{fishName} changed to GroundFish layer");
         }
         else
         {
@@ -147,7 +148,6 @@ public class FlyingFish : MonoBehaviour
         {
             canPickup = true;
             playerInRange = other.gameObject;
-            Debug.Log($"Press E to pick up {fishName}");
         }
     }
 
@@ -168,7 +168,6 @@ public class FlyingFish : MonoBehaviour
             if (player != null)
             {
                 player.CollectFish(healthValue, scoreValue);
-                Debug.Log($"Picked up {fishName}! +{healthValue} HP, +{scoreValue} points");
 
                 if (fishPile != null)
                 {

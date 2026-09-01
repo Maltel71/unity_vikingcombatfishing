@@ -13,7 +13,7 @@ public class HPBar : MonoBehaviour
             fillImage = GetComponent<Image>();
         }
 
-        player = FindObjectOfType<PlayerScript>();
+        player = FindFirstObjectByType<PlayerScript>();
     }
 
     void Update()

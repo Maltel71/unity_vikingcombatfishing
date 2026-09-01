@@ -31,23 +31,30 @@ public class StartMenuController : MonoBehaviour
             quitButton.onClick.AddListener(OnQuitButtonClicked);
         }
 
+        // Dela mixer-installningen med pausmenyn sa bada styr samma volym
+        VolumeSettings.Mixer = audioMixer;
+        VolumeSettings.MixerParameter = masterVolumeParameter;
+
         // Set up volume slider
         if (masterVolumeSlider != null)
         {
             // Load saved volume or use default
-            float savedVolume = PlayerPrefs.GetFloat("MasterVolume", defaultVolume);
+            float savedVolume = PlayerPrefs.GetFloat(VolumeSettings.PrefKey, defaultVolume);
             masterVolumeSlider.value = savedVolume;
             SetMasterVolume(savedVolume);
 
             // Add listener for slider changes
             masterVolumeSlider.onValueChanged.AddListener(SetMasterVolume);
         }
+        else
+        {
+            // Ingen slider i menyn - se anda till att sparad volym galler
+            VolumeSettings.Apply(VolumeSettings.Load());
+        }
     }
 
     private void OnStartButtonClicked()
     {
-        Debug.Log("Start button clicked - Loading game scene");
-
         // Load your main game scene
         // Make sure to add your game scene to Build Settings (File > Build Settings)
         SceneManager.LoadScene(gameSceneName);
@@ -55,8 +62,6 @@ public class StartMenuController : MonoBehaviour
 
     private void OnQuitButtonClicked()
     {
-        Debug.Log("Quit button clicked");
-
 #if UNITY_EDITOR
         // If running in the Unity Editor
         UnityEditor.EditorApplication.isPlaying = false;
@@ -68,23 +73,7 @@ public class StartMenuController : MonoBehaviour
 
     private void SetMasterVolume(float volume)
     {
-        if (audioMixer != null)
-        {
-            // Convert linear slider value (0-1) to decibels (-80 to 0)
-            // Audio mixers use logarithmic scale (decibels)
-            float dB = volume > 0 ? 20f * Mathf.Log10(volume) : -80f;
-
-            audioMixer.SetFloat(masterVolumeParameter, dB);
-        }
-        else
-        {
-            // Fallback to AudioListener if no mixer is assigned
-            AudioListener.volume = volume;
-        }
-
-        // Save the volume setting
-        PlayerPrefs.SetFloat("MasterVolume", volume);
-        PlayerPrefs.Save();
+        VolumeSettings.ApplyAndSave(volume);
     }
 
     private void OnDestroy()
