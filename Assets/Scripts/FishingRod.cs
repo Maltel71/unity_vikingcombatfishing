@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [System.Serializable]
 public class FishType
@@ -29,6 +30,12 @@ public class FishingRod : MonoBehaviour
     [HideInInspector] public bool isWaitingForBite = false;
     [HideInInspector] public bool isReelingIn = false;
     [HideInInspector] public float reelInProgress = 0f;
+
+    /// <summary>Vevtiden for fisken som nappat just nu. UI:t maste rakna pa den, inte pa reelInDuration.</summary>
+    public float CurrentReelDuration
+    {
+        get { return currentReelDuration > 0f ? currentReelDuration : reelInDuration; }
+    }
 
     [Header("Reel In Settings")]
     public float reelInDuration = 3f;
@@ -79,6 +86,8 @@ public class FishingRod : MonoBehaviour
     public Transform pickupRangeObject;
 
     private Coroutine biteCoroutine;
+    private GameObject pendingFish;          // vald redan vid kastet
+    private float currentReelDuration;       // reelInDuration gangrat med artens svarighet
     private Coroutine fadeOutCoroutine;
 
     void Start()
@@ -139,7 +148,7 @@ public class FishingRod : MonoBehaviour
             reelInProgress += Time.deltaTime;
         }
 
-        if (reelInProgress >= reelInDuration)
+        if (isReelingIn && reelInProgress >= CurrentReelDuration)
         {
             CatchFish();
         }
@@ -160,7 +169,7 @@ public class FishingRod : MonoBehaviour
         if (isReelingIn && !reelingSFXSource.isPlaying && reelingSFX.Length > 0)
         {
             // Calculate volume based on reel progress
-            float progress = reelInProgress / reelInDuration;
+            float progress = reelInProgress / CurrentReelDuration;
             float currentVolume = Mathf.Lerp(reelingSFXStartVolume, reelingSFXMaxVolume, progress);
 
             reelingSFXSource.PlayOneShot(reelingSFX[currentReelingSFXIndex], currentVolume);
@@ -171,7 +180,25 @@ public class FishingRod : MonoBehaviour
     IEnumerator WaitForBite()
     {
         isWaitingForBite = true;
-        float waitTime = Random.Range(minBiteTime, maxBiteTime);
+
+        // Fisken lottas redan nar man kastar, sa arten kan styra bade hur lange
+        // det tar innan det nappar och hur tungt den ar att veva in.
+        pendingFish = GetRandomFish();
+
+        float biteMultiplier = 1f;
+        currentReelDuration = reelInDuration;
+
+        if (pendingFish != null)
+        {
+            FlyingFish info = pendingFish.GetComponent<FlyingFish>();
+            if (info != null)
+            {
+                biteMultiplier = Mathf.Max(0.05f, info.biteTimeMultiplier);
+                currentReelDuration = reelInDuration * Mathf.Max(0.05f, info.reelDifficulty);
+            }
+        }
+
+        float waitTime = Random.Range(minBiteTime, maxBiteTime) * biteMultiplier;
         yield return new WaitForSeconds(waitTime);
 
         hasBite = true;
@@ -217,8 +244,9 @@ public class FishingRod : MonoBehaviour
             animController.PlayCatch();
         }
 
-        // Select fish based on weighted system
-        GameObject fishPrefab = GetRandomFish();
+        // Fisken lottades redan vid kastet i WaitForBite
+        GameObject fishPrefab = pendingFish != null ? pendingFish : GetRandomFish();
+        pendingFish = null;
 
         if (fishPrefab == null)
         {
@@ -243,14 +271,17 @@ public class FishingRod : MonoBehaviour
 
         GameObject fish = Instantiate(fishPrefab, spawnPos, Quaternion.identity);
 
-        // Berattar for spelaren vad som kom upp ur vattnet
-        if (showCatchPopup)
+        FlyingFish caught = fish.GetComponent<FlyingFish>();
+        if (caught != null)
         {
-            FlyingFish caught = fish.GetComponent<FlyingFish>();
-            if (caught != null)
+            // Berattar for spelaren vad som kom upp ur vattnet
+            if (showCatchPopup)
             {
                 CatchPopup.Show(caught.fishName, caught.healthValue, caught.scoreValue);
             }
+
+            bool junk = caught.healthValue <= 0 && caught.scoreValue <= 0;
+            SteamAchievements.OnFishCaught(caught.fishName, junk, CountRealSpecies());
         }
 
         if (waterSplashEffect != null)
@@ -288,6 +319,30 @@ public class FishingRod : MonoBehaviour
         }
 
         ResetFishing();
+    }
+
+    /// <summary>Antal riktiga arter i listan. Skrapfangst som stoveln raknas inte.</summary>
+    int CountRealSpecies()
+    {
+        if (fishTypes == null) return 0;
+
+        // Rakna UNIKA namn, inte rader. Samma art kan ha flera utseenden
+        // (regnbagen har tva) och ska da bara raknas en gang.
+        List<string> seen = new List<string>();
+
+        foreach (FishType ft in fishTypes)
+        {
+            if (ft == null || ft.fishPrefab == null) continue;
+
+            FlyingFish info = ft.fishPrefab.GetComponent<FlyingFish>();
+            if (info == null) continue;
+            if (info.healthValue <= 0 && info.scoreValue <= 0) continue;
+            if (string.IsNullOrEmpty(info.fishName)) continue;
+
+            if (!seen.Contains(info.fishName)) seen.Add(info.fishName);
+        }
+
+        return seen.Count;
     }
 
     GameObject GetRandomFish()
@@ -353,6 +408,8 @@ public class FishingRod : MonoBehaviour
 
     void ResetFishing()
     {
+        pendingFish = null;
+        currentReelDuration = reelInDuration;
         hasBite = false;
         isReelingIn = false;
         isWaitingForBite = false;

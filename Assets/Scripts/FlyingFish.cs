@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class FlyingFish : MonoBehaviour
 {
@@ -6,6 +6,12 @@ public class FlyingFish : MonoBehaviour
     public string fishName = "Fisk";
     public int healthValue = 20;
     public int scoreValue = 20;
+
+    [Header("Svarighet - hur jobbig arten ar att fa upp")]
+    [Tooltip("Multiplikator pa spoets nappvantan. 0.5 = nappar dubbelt sa snabbt, 2 = tar dubbelt sa lang tid.")]
+    public float biteTimeMultiplier = 1f;
+    [Tooltip("Multiplikator pa vevtiden. Hogre = tyngre fisk som tar langre att veva in.")]
+    public float reelDifficulty = 1f;
 
     [Header("Physics Settings")]
     public float gravityScale = 2f;

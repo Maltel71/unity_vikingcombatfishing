@@ -87,8 +87,12 @@ public class EndlessWaveManager : MonoBehaviour
     private bool bossQueued = false;
     private bool bossAlive = false;
     private bool bossEncounterActive = false;   // sant fran utropet tills han ar dod
+    private string currentBossName = "";
     private bool combatMusicPlaying = false;
     private PlayerScript player;
+
+    /// <summary>Lever en boss just nu? Anvands bl.a. av dans-achievementen.</summary>
+    public bool BossAlive { get { return bossAlive; } }
 
     void Start()
     {
@@ -185,6 +189,8 @@ public class EndlessWaveManager : MonoBehaviour
                 yield return StartCoroutine(BossWave());
                 continue;
             }
+
+            SteamAchievements.OnWaveReached(currentWave);
 
             if (waveAnnouncer != null)
             {
@@ -307,6 +313,7 @@ public class EndlessWaveManager : MonoBehaviour
         if (sp == null) return;
 
         bossAlive = true;
+        currentBossName = boss.bossName;
         SpawnEnemy(boss.prefab, sp, boss);
     }
 
@@ -348,12 +355,14 @@ public class EndlessWaveManager : MonoBehaviour
             bossAlive = false;
             BossesDefeated++;
             AwardBlood(bloodPerBoss, true);
+            SteamAchievements.OnBossKilled(currentBossName);
             return; // bosskill raknas inte mot nasta boss
         }
 
         TotalGnomesKilled++;
         killsSinceLastBoss++;
         AwardBlood(bloodPerGnome, false);
+        SteamAchievements.OnGnomeKilled();
 
         if (HasBosses && KillsNeededForNextBoss > 0 && killsSinceLastBoss >= KillsNeededForNextBoss)
         {

@@ -1,0 +1,34 @@
+RAGNAR GOES FISHING - ACHIEVEMENTS
+App ID 5207630
+
+Lagg upp dessa pa Steamworks: App Admin > Stats & Achievements > Achievement Configuration.
+API-namnet MASTE stamma exakt med kolumnen nedan - koden letar efter just de strangarna.
+Achievements gar inte att skapa via API, bara att lasa upp.
+
+Ikoner ligger i achievement_icons/ - en _unlocked och en _locked per achievement.
+Ladda upp _unlocked som "Achieved Icon" och _locked som "Unachieved Icon".
+
+--------------------------------------------------------------------------
+API-namn            Visas som              Beskrivning
+--------------------------------------------------------------------------
+ACH_FIRST_CATCH     First Catch            Reel your first fish out of the water.
+ACH_OLD_BOOT        Sole Survivor          Some days the lake gives you footwear.
+ACH_ALL_FISH        Full Stringer          Catch every species at least once.
+ACH_GNOMES_50       Gnome Slayer           Kill 50 gnomes.
+ACH_GNOMES_250      Garden Cleared         Kill 250 gnomes.
+ACH_FIRST_BOSS      Bigger Fish            Defeat your first boss.
+ACH_ALL_BOSSES      Trophy Hunter          Defeat Muscle, the Troll and Nacken.
+ACH_WAVE_10         Long Day at the Lake   Reach wave 10.
+ACH_SCORE_1000      Master Angler          Score 1000 points in a single run.
+ACH_DANCE_BOSS      Cold Blooded           Dance while a boss is still alive.
+--------------------------------------------------------------------------
+
+Villkoren i koden (SteamAchievements.cs):
+  ACH_GNOMES_50 / 250   raknas kumulativt over alla omgangar, sparas i PlayerPrefs
+  ACH_ALL_FISH          alla arter i FishingRod.fishTypes utom skrapfangst (stoveln)
+  ACH_ALL_BOSSES        alla tre bossNamn i EndlessWaveManager.bosses
+  ACH_SCORE_1000        PlayerScript.TotalScore = fiskepoang + blood money
+  ACH_DANCE_BOSS        Ctrl medan EndlessWaveManager.BossAlive ar sant
+
+Nollstalla lokalt under test: SteamAchievements.ResetLocalProgress()
+Nollstalla pa Steam: konsolkommandot reset_all_stats i Steam-klienten.

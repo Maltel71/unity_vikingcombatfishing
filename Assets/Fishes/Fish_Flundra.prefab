@@ -134,9 +134,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fa5f3decbd05f54e914696a58b0630a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlyingFish
-  fishName: Flundra
-  healthValue: 10
-  scoreValue: 2
+  fishName: Flounder
+  healthValue: 35
+  scoreValue: 60
+  biteTimeMultiplier: 1.7
+  reelDifficulty: 1.7
   gravityScale: 2
   minAngularVelocity: -360
   maxAngularVelocity: 360

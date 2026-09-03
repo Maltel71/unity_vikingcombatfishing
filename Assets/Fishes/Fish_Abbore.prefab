@@ -134,9 +134,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fa5f3decbd05f54e914696a58b0630a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FlyingFish
-  fishName: Aborre
+  fishName: Perch
   healthValue: 10
-  scoreValue: 2
+  scoreValue: 12
+  biteTimeMultiplier: 0.7
+  reelDifficulty: 0.75
   gravityScale: 2
   minAngularVelocity: -360
   maxAngularVelocity: 360

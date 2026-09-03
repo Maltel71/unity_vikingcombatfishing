@@ -49,6 +49,13 @@ public class CatchPopup : MonoBehaviour
 
         if (popupText == null)
         {
+            // Ligger scriptet redan pa ett textobjekt anvander vi den texten.
+            // Utan detta byggdes en helt ny canvas bredvid, och man fick tva.
+            popupText = GetComponent<TextMeshProUGUI>();
+        }
+
+        if (popupText == null)
+        {
             BuildUI();
         }
 

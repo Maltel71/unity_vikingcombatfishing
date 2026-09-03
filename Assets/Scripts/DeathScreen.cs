@@ -80,6 +80,10 @@ public class DeathScreen : MonoBehaviour
         // Fiskepoang + blodspengar avgor plats pa topplistan
         int total = player != null ? player.TotalScore : 0;
 
+        // Steam behaller bara ens basta, sa vi kan skicka upp varje runda.
+        // Gor ingenting om Steam inte ar igang.
+        SteamLeaderboards.UploadScore(total);
+
         if (askForNameOnHighscore && Highscores.Qualifies(total))
         {
             yield return StartCoroutine(AskForNameAndSave(total));

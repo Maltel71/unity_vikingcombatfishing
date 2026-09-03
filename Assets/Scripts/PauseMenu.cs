@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
@@ -345,40 +346,61 @@ public class PauseMenu : MonoBehaviour
             return;
         }
 
+        // Slå ihop arter som har flera utseenden - regnbagen ligger som tva
+        // rader i fishTypes men ar en art och ska visas pa en rad.
+        List<string> names = new List<string>();
+        List<FlyingFish> infos = new List<FlyingFish>();
+        List<float> weights = new List<float>();
         float totalWeight = 0f;
-        int count = 0;
-        foreach (FishType ft in rod.fishTypes)
-        {
-            if (ft == null || ft.fishPrefab == null) continue;
-            totalWeight += Mathf.Max(0f, ft.weight);
-            count++;
-        }
-
-        // Krymp raderna om listan vaxer sa den alltid far plats
-        float rowHeight = count > 12 ? 400f / count : 34f;
-        float y = -rowHeight * 0.5f - 4f;
-        int index = 0;
 
         foreach (FishType ft in rod.fishTypes)
         {
             if (ft == null || ft.fishPrefab == null) continue;
 
             FlyingFish fish = ft.fishPrefab.GetComponent<FlyingFish>();
+            string name = fish != null && !string.IsNullOrEmpty(fish.fishName)
+                ? fish.fishName
+                : ft.fishPrefab.name;
 
-            string name = fish != null && !string.IsNullOrEmpty(fish.fishName) ? fish.fishName : ft.fishPrefab.name;
+            float w = Mathf.Max(0f, ft.weight);
+            totalWeight += w;
+
+            int at = names.IndexOf(name);
+            if (at >= 0)
+            {
+                weights[at] += w;
+            }
+            else
+            {
+                names.Add(name);
+                infos.Add(fish);
+                weights.Add(w);
+            }
+        }
+
+        int count = names.Count;
+
+        // Krymp raderna om listan vaxer sa den alltid far plats
+        float rowHeight = count > 12 ? 400f / count : 34f;
+        float y = -rowHeight * 0.5f - 4f;
+
+        for (int i = 0; i < count; i++)
+        {
+            FlyingFish fish = infos[i];
+
             string hp = fish != null ? FormatSigned(fish.healthValue) : "-";
             string score = fish != null ? FormatSigned(fish.scoreValue) : "-";
             string chance = totalWeight > 0f
-                ? Mathf.RoundToInt(Mathf.Max(0f, ft.weight) / totalWeight * 100f) + "%"
+                ? Mathf.RoundToInt(weights[i] / totalWeight * 100f) + "%"
                 : "-";
 
             // Skrapfangst (0 eller minus i bada) far dovare farg
             bool junk = fish != null && fish.scoreValue <= 0 && fish.healthValue <= 0;
             Color color = junk ? UiKit.TextDim : UiKit.TextColor;
 
-            BuildRow(guideRows, "Row" + index, y, name, hp, score, chance, color, rowHeight > 30f ? 25f : 20f);
+            BuildRow(guideRows, "Row" + i, y, names[i], hp, score, chance, color,
+                     rowHeight > 30f ? 25f : 20f);
             y -= rowHeight;
-            index++;
         }
     }
 

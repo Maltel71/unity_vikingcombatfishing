@@ -50,6 +50,7 @@ public class EnemyScript : MonoBehaviour
 
     private AudioSource audioSource;
     private Transform playerTransform;
+    private PlayerScript playerScript;
     private bool isDying = false;
     private EnemyAnimationController animController;
 
@@ -60,6 +61,7 @@ public class EnemyScript : MonoBehaviour
         if (playerObj != null)
         {
             playerTransform = playerObj.transform;
+            playerScript = playerObj.GetComponent<PlayerScript>();
         }
         else
         {
@@ -115,10 +117,9 @@ public class EnemyScript : MonoBehaviour
         // Check if player is in attack range
         if (distanceToPlayer <= attackRange && Time.time >= nextAttackTime)
         {
-            PlayerScript player = playerTransform.GetComponent<PlayerScript>();
-            if (player != null)
+            if (playerScript != null)
             {
-                Attack(player);
+                Attack(playerScript);
                 nextAttackTime = Time.time + (1f / attackSpeed);
             }
         }
@@ -252,10 +253,9 @@ public class EnemyScript : MonoBehaviour
 
         if (distanceToPlayer <= attackRange)
         {
-            PlayerScript player = playerTransform.GetComponent<PlayerScript>();
-            if (player != null)
+            if (playerScript != null)
             {
-                player.TakeDamage(damage);
+                playerScript.TakeDamage(damage);
             }
         }
     }

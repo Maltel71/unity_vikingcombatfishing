@@ -87,7 +87,7 @@ public class FishingUI : MonoBehaviour
             ShowOnlyIcon(reelingIcon);
             if (reelingIcon != null)
             {
-                float progress = fishingRod.reelInProgress / fishingRod.reelInDuration;
+                float progress = fishingRod.reelInProgress / fishingRod.CurrentReelDuration;
                 reelingIcon.fillAmount = progress;
 
                 // Scale up gradually from min to max as reeling progresses

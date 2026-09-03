@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
@@ -166,6 +166,10 @@ public class PlayerScript : MonoBehaviour
             {
                 isDancing = true;
                 cachedAnimController.StartDancing();
+
+                // Att dansa framfor en boss ar sin egen belonig
+                EndlessWaveManager waves = FindFirstObjectByType<EndlessWaveManager>();
+                SteamAchievements.OnDanceStarted(waves != null && waves.BossAlive);
             }
         }
         else
@@ -220,6 +224,8 @@ public class PlayerScript : MonoBehaviour
         // Add score (never below 0)
         playerScore = Mathf.Max(0, playerScore + score);
 
+        SteamAchievements.OnScoreChanged(TotalScore);
+
         if (playerHealth <= 0)
         {
             Die();
@@ -235,6 +241,8 @@ public class PlayerScript : MonoBehaviour
         if (!isAlive) return;
 
         bloodMoney = Mathf.Max(0, bloodMoney + amount);
+
+        SteamAchievements.OnScoreChanged(TotalScore);
 
         if (wasBoss) bossesKilled++;
         else gnomesKilled++;
