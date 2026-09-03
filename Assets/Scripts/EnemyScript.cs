@@ -29,6 +29,9 @@ public class EnemyScript : MonoBehaviour
 
     // Satts av EndlessWaveManager vid spawn. Elitfiender (Muscle) raknas separat.
     [HideInInspector] public bool isElite = false;
+
+    /// <summary>Halsan vid spawn, efter elitmultiplikatorerna. Anvands av hpbaren.</summary>
+    public int MaxHealth { get; private set; }
     [HideInInspector] public float eliteHealthMultiplier = 1f;
     [HideInInspector] public float eliteDamageMultiplier = 1f;
     [HideInInspector] public float eliteSizeMultiplier = 1.6f;
@@ -79,6 +82,9 @@ public class EnemyScript : MonoBehaviour
         nextIdleSoundTime = Time.time + Random.Range(minIdleSoundTime, maxIdleSoundTime);
 
         ApplyVariations();
+
+        // Efter ApplyVariations - elitens health har redan multiplicerats upp
+        MaxHealth = Mathf.Max(1, health);
     }
 
     void ApplyVariations()

@@ -94,6 +94,12 @@ public class EndlessWaveManager : MonoBehaviour
     /// <summary>Lever en boss just nu? Anvands bl.a. av dans-achievementen.</summary>
     public bool BossAlive { get { return bossAlive; } }
 
+    /// <summary>Bossen som ar ute just nu, eller null. Hpbaren laser den.</summary>
+    public EnemyScript ActiveBoss { get; private set; }
+
+    /// <summary>Namnet som ska visas over hpbaren, t.ex. "TROLLET II".</summary>
+    public string ActiveBossLabel { get; private set; }
+
     void Start()
     {
         player = FindFirstObjectByType<PlayerScript>();
@@ -275,6 +281,7 @@ public class EndlessWaveManager : MonoBehaviour
             if (bossMaxDuration > 0f && elapsed >= bossMaxDuration)
             {
                 bossAlive = false;
+                ActiveBoss = null;
                 break;
             }
             yield return null;
@@ -314,12 +321,13 @@ public class EndlessWaveManager : MonoBehaviour
 
         bossAlive = true;
         currentBossName = boss.bossName;
-        SpawnEnemy(boss.prefab, sp, boss);
+        ActiveBossLabel = BuildAnnouncement(boss);
+        ActiveBoss = SpawnEnemy(boss.prefab, sp, boss);
     }
 
     // ---------------- Gemensam spawn ----------------
 
-    void SpawnEnemy(GameObject prefab, Transform spawnPoint, BossType boss)
+    EnemyScript SpawnEnemy(GameObject prefab, Transform spawnPoint, BossType boss)
     {
         GameObject newEnemy = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
 
@@ -342,6 +350,7 @@ public class EndlessWaveManager : MonoBehaviour
         }
 
         LiveEnemies++;
+        return enemy;
     }
 
     // ---------------- Callbacks fran EnemyScript ----------------
@@ -353,6 +362,7 @@ public class EndlessWaveManager : MonoBehaviour
         if (enemy != null && enemy.isElite)
         {
             bossAlive = false;
+            ActiveBoss = null;
             BossesDefeated++;
             AwardBlood(bloodPerBoss, true);
             SteamAchievements.OnBossKilled(currentBossName);
