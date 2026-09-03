@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 [System.Serializable]
@@ -20,6 +20,10 @@ public class FishingRod : MonoBehaviour
 
     [Header("Visual Effects")]
     public ParticleSystem waterSplashEffect;
+
+    [Header("Fangsttext")]
+    [Tooltip("Visa en text med fiskens namn nar den kommer upp ur vattnet.")]
+    public bool showCatchPopup = true;
 
     [HideInInspector] public bool hasBite = false;
     [HideInInspector] public bool isWaitingForBite = false;
@@ -238,6 +242,16 @@ public class FishingRod : MonoBehaviour
         }
 
         GameObject fish = Instantiate(fishPrefab, spawnPos, Quaternion.identity);
+
+        // Berattar for spelaren vad som kom upp ur vattnet
+        if (showCatchPopup)
+        {
+            FlyingFish caught = fish.GetComponent<FlyingFish>();
+            if (caught != null)
+            {
+                CatchPopup.Show(caught.fishName, caught.healthValue, caught.scoreValue);
+            }
+        }
 
         if (waterSplashEffect != null)
         {

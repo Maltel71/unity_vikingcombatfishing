@@ -77,7 +77,23 @@ public class PauseMenu : MonoBehaviour
         }
         if (!wanted) return;
 
-        if (FindFirstObjectByType<PauseMenu>() != null) return;
+        // Leta AVEN bland avstangda objekt. Standard-FindFirstObjectByType hoppar over
+        // inaktiva, sa en utlagd men avbockad pausmeny hittades inte - och da byggdes
+        // en till i kod, med standardfargerna ovanpa den egna designen.
+        PauseMenu existing = FindFirstObjectByType<PauseMenu>(FindObjectsInactive.Include);
+
+        if (existing != null)
+        {
+            if (!existing.gameObject.activeSelf)
+            {
+                // Objektet maste vara pa for att Start() ska kora. Sjalva menyn
+                // gors osynlig av SetVisible(false), inte av den har bocken.
+                existing.gameObject.SetActive(true);
+                Debug.LogWarning("PauseMenu-objektet i scenen var avbockat och slogs pa. " +
+                                 "Bocka av PauseMenuCanvas istallet om du vill gomma menyn i editorn.");
+            }
+            return;
+        }
 
         GameObject go = new GameObject("PauseMenu");
         go.AddComponent<PauseMenu>();
