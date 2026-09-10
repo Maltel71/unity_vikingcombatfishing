@@ -11,19 +11,19 @@ public class FishPile : MonoBehaviour
     [Header("Random Placement")]
     public Collider2D pileAreaCollider;
 
-    [Header("Kast till hogen")]
-    [Tooltip("Slunga fisken i en bage till hogen istallet for att teleportera den dit.")]
+    [Header("Throw To Pile")]
+    [Tooltip("Throw the fish in an arc to the pile instead of teleporting it there.")]
     public bool throwFishToPile = true;
-    [Tooltip("Hur lange flykten tar. Ligger hogen langt bort tal den ett hogre varde.")]
+    [Tooltip("Flight time. A pile far away can take a higher value.")]
     public float throwDuration = 0.7f;
-    [Tooltip("Hur hogt bagen bucklar upp sig pa mitten, i world units.")]
+    [Tooltip("Arc height at the midpoint, in world units.")]
     public float throwArcHeight = 3.5f;
-    [Tooltip("Snurr under flykten, grader per sekund. Slumpas at bada hallen.")]
+    [Tooltip("Spin during flight, degrees per second. Randomised in both directions.")]
     public float throwSpin = 720f;
-    [Tooltip("Storlek nar den landar. Under 1 ger kanslan av att den flyger bort i djupet.")]
+    [Tooltip("Scale on landing. Below 1 sells the feeling of flying off into the distance.")]
     public float throwEndScale = 1f;
 
-    [Header("Kastljud")]
+    [Header("Cast Sounds")]
     public AudioClip throwSound;
     [Range(0f, 1f)]
     public float throwVolume = 0.6f;
@@ -36,7 +36,7 @@ public class FishPile : MonoBehaviour
 
     void Start()
     {
-        // Get collider if not assigned
+
         if (pileAreaCollider == null)
         {
             pileAreaCollider = GetComponent<Collider2D>();
@@ -65,10 +65,8 @@ public class FishPile : MonoBehaviour
             return;
         }
 
-        // Add to list
         fishInPile.Add(fish);
 
-        // Remove oldest fish if too many
         if (fishInPile.Count > maxFishInPile)
         {
             GameObject oldestFish = fishInPile[0];
@@ -77,7 +75,6 @@ public class FishPile : MonoBehaviour
                 Destroy(oldestFish);
         }
 
-        // Sluta lyssna pa fysik och upplockning direkt - fisken ar redan "tagen"
         DisableFishPhysics(fish);
 
         Vector3 target = GetPilePosition();
@@ -115,7 +112,6 @@ public class FishPile : MonoBehaviour
         }
     }
 
-    /// <summary>Slungar fisken i en bage bort mot hogen sa man ser vart den tar vagen.</summary>
     IEnumerator ThrowToPile(GameObject fish, Vector3 target)
     {
         if (fish == null) yield break;
@@ -132,13 +128,12 @@ public class FishPile : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < throwDuration)
         {
-            // Fisken kan hinna forstoras om hogen svammar over
+
             if (fish == null) yield break;
 
             elapsed += Time.deltaTime;
             float t = Mathf.Clamp01(elapsed / throwDuration);
 
-            // Rak linje plus en sinusbage som lyfter mitten av kastet
             Vector3 flat = Vector3.Lerp(start, target, t);
             flat.y += Mathf.Sin(t * Mathf.PI) * throwArcHeight;
 
@@ -162,11 +157,9 @@ public class FishPile : MonoBehaviour
 
         fish.transform.position = position;
 
-        // Random rotation for natural look
         fish.transform.rotation = Quaternion.Euler(0, 0, Random.Range(-180f, 180f));
     }
 
-    /// <summary>Slumpar en plats inne i hogens omrade.</summary>
     Vector3 GetPilePosition()
     {
         if (pileAreaCollider != null)
@@ -179,7 +172,6 @@ public class FishPile : MonoBehaviour
             );
         }
 
-        // Fallback if no collider
         return transform.position + new Vector3(
             Random.Range(-0.5f, 0.5f),
             Random.Range(-0.5f, 0.5f),

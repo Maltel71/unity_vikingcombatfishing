@@ -1,10 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// Topplistan. Sparas i PlayerPrefs och overlever att spelet stangs av.
-/// Poangen som lagras ar PlayerScript.TotalScore, alltsa fiskepoang + blodspengar.
-/// </summary>
 public static class Highscores
 {
     public const int MaxEntries = 5;
@@ -26,7 +22,6 @@ public static class Highscores
         }
     }
 
-    // Listan borjar inte tom - annars ser menyn trasig ut forsta gangen
     static readonly Entry[] DefaultEntries =
     {
         new Entry("Loke", 500),
@@ -70,7 +65,6 @@ public static class Highscores
         PlayerPrefs.Save();
     }
 
-    /// <summary>Racker poangen till en plats pa listan?</summary>
     public static bool Qualifies(int score)
     {
         if (score <= 0) return false;
@@ -81,7 +75,6 @@ public static class Highscores
         return score > entries[entries.Count - 1].score;
     }
 
-    /// <summary>Lagger in resultatet och returnerar placeringen (1-5), eller 0 om det inte rackte.</summary>
     public static int Add(string name, int score)
     {
         if (string.IsNullOrEmpty(name)) name = "Viking";
@@ -129,7 +122,6 @@ public static class Highscores
         PlayerPrefs.Save();
     }
 
-    /// <summary>Nollar listan till standardnamnen igen.</summary>
     public static void ResetToDefaults()
     {
         PlayerPrefs.DeleteKey(SeededKey);

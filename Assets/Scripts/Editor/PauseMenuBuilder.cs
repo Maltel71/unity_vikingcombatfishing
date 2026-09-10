@@ -2,16 +2,9 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 
-/// <summary>
-/// Editorverktyg som lagger ut pausmenyn som riktiga GameObjects i scenen,
-/// sa den gar att flytta och styla om i Hierarchy istallet for att bara byggas
-/// i kod vid start.
-///
-/// Ligger i en Editor-mapp och foljer darfor inte med i nagon build.
-/// </summary>
 public static class PauseMenuBuilder
 {
-    const string MenuPath = "Tools/Ragnar/Skapa pausmeny i scenen";
+    const string MenuPath = "Tools/Ragnar/Build Pause Menu";
 
     [MenuItem(MenuPath)]
     public static void CreateInScene()
@@ -21,10 +14,10 @@ public static class PauseMenuBuilder
         if (existing != null && existing.menuRoot != null)
         {
             bool replace = EditorUtility.DisplayDialog(
-                "Pausmenyn finns redan",
-                "Det ligger redan en utbyggd pausmeny i scenen. Vill du bygga om den fran grunden?\n\n" +
-                "All egen styling du gjort pa den forsvinner.",
-                "Bygg om", "Avbryt");
+                "Pause menu already exists",
+                "A built pause menu is already in the scene. Rebuild it from scratch?\n\n" +
+                "Any styling you have done on it will be lost.",
+                "Rebuild", "Cancel");
 
             if (!replace)
             {
@@ -42,16 +35,15 @@ public static class PauseMenuBuilder
         if (menu == null)
         {
             GameObject go = new GameObject("PauseMenu");
-            Undo.RegisterCreatedObjectUndo(go, "Skapa pausmeny");
+            Undo.RegisterCreatedObjectUndo(go, "Create Pause Menu");
             menu = go.AddComponent<PauseMenu>();
         }
 
         menu.BuildInto(menu.transform);
 
-        // Menyn ska ligga gomd tills spelaren trycker Escape
         if (menu.menuRoot != null)
         {
-            Undo.RegisterCreatedObjectUndo(menu.menuRoot, "Skapa pausmeny");
+            Undo.RegisterCreatedObjectUndo(menu.menuRoot, "Create Pause Menu");
             menu.menuRoot.SetActive(false);
         }
 
@@ -61,7 +53,7 @@ public static class PauseMenuBuilder
         Selection.activeGameObject = menu.gameObject;
         EditorGUIUtility.PingObject(menu.gameObject);
 
-        Debug.Log("Pausmenyn ar utlagd i scenen. Oppna PauseMenu > PauseMenuCanvas i Hierarchy " +
-                  "for att justera panelerna. Glom inte att spara scenen.");
+        Debug.Log("Pause menu added to the scene. Open PauseMenu > PauseMenuCanvas in the Hierarchy " +
+                  "to adjust the panels. Remember to save the scene.");
     }
 }

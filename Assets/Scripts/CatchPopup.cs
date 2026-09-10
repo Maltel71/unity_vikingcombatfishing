@@ -3,21 +3,12 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 
-/// <summary>
-/// Liten text som poppar upp och visar vilken fisk man just fick upp.
-///
-/// Anropas fran FishingRod nar fisken kastas upp ur vattnet.
-/// Har ingen text tilldelats bygger den en egen canvas i kod, sa den fungerar
-/// direkt utan att nagot behover satas upp i editorn. Vill du styla den sjalv:
-/// gor en egen TextMeshProUGUI, lagg det har scriptet pa nagot i scenen och
-/// dra in texten i Popup Text.
-/// </summary>
 public class CatchPopup : MonoBehaviour
 {
     public static CatchPopup Instance { get; private set; }
 
     [Header("UI")]
-    [Tooltip("Lamnas den tom byggs en egen text i kod.")]
+    [Tooltip("Leave empty to build a label in code.")]
     public TextMeshProUGUI popupText;
 
     [Header("Timing")]
@@ -25,18 +16,18 @@ public class CatchPopup : MonoBehaviour
     public float holdDuration = 1.3f;
     public float fadeOutDuration = 0.5f;
 
-    [Header("Rorelse")]
-    [Tooltip("Hur langt texten glider uppat medan den visas.")]
+    [Header("Movement")]
+    [Tooltip("How far the text drifts upward while shown.")]
     public float riseDistance = 45f;
-    [Tooltip("Hur mycket den studsar till nar den dyker upp.")]
+    [Tooltip("Bounce amount when it appears.")]
     public float popScale = 1.25f;
 
-    [Header("Farger")]
-    public Color catchColor = new Color(0.878f, 0.698f, 0.290f, 1f);   // guld
-    public Color junkColor = new Color(0.62f, 0.58f, 0.52f, 1f);       // dov - stoveln
+    [Header("Colours")]
+    public Color catchColor = new Color(0.878f, 0.698f, 0.290f, 1f);
+    public Color junkColor = new Color(0.62f, 0.58f, 0.52f, 1f);
 
-    [Header("Innehall")]
-    [Tooltip("Visa HP och poang pa rad tva.")]
+    [Header("Content")]
+    [Tooltip("Show HP and points on line two.")]
     public bool showValues = true;
 
     private RectTransform rt;
@@ -49,8 +40,7 @@ public class CatchPopup : MonoBehaviour
 
         if (popupText == null)
         {
-            // Ligger scriptet redan pa ett textobjekt anvander vi den texten.
-            // Utan detta byggdes en helt ny canvas bredvid, och man fick tva.
+
             popupText = GetComponent<TextMeshProUGUI>();
         }
 
@@ -72,16 +62,13 @@ public class CatchPopup : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    // ---------------- Publikt anrop ----------------
-
-    /// <summary>Visar fangsten. Skapar en popup om scenen saknar en.</summary>
     public static void Show(string fishName, int healthValue, int scoreValue)
     {
         CatchPopup popup = Instance;
 
         if (popup == null)
         {
-            // Ta med avstangda objekt - annars byggs en dubblett ovanpa en utlagd popup
+
             popup = FindFirstObjectByType<CatchPopup>(FindObjectsInactive.Include);
 
             if (popup != null && !popup.gameObject.activeSelf)
@@ -138,13 +125,10 @@ public class CatchPopup : MonoBehaviour
         return line;
     }
 
-    // ---------------- Animation ----------------
-
     IEnumerator PlayPopup()
     {
         rt.anchoredPosition = restPosition;
 
-        // Fade in med en liten studs
         float elapsed = 0f;
         while (elapsed < fadeInDuration)
         {
@@ -163,7 +147,6 @@ public class CatchPopup : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(holdDuration);
 
-        // Fade out medan den glider uppat
         elapsed = 0f;
         while (elapsed < fadeOutDuration)
         {
@@ -188,8 +171,6 @@ public class CatchPopup : MonoBehaviour
         c.a = Mathf.Clamp01(a);
         popupText.color = c;
     }
-
-    // ---------------- Reserv-UI ----------------
 
     void BuildUI()
     {

@@ -41,7 +41,6 @@ public class FishingUI : MonoBehaviour
     {
         fishingRod = GetComponent<FishingRod>();
 
-        // Store original scales
         if (biteIcon != null)
         {
             biteIconOriginalScale = biteIcon.transform.localScale;
@@ -57,7 +56,6 @@ public class FishingUI : MonoBehaviour
             waitingIconOriginalRotation = waitingIcon.transform.localRotation;
         }
 
-        // Hide all icons at start
         HideAllIcons();
     }
 
@@ -83,18 +81,16 @@ public class FishingUI : MonoBehaviour
     {
         if (fishingRod.isReelingIn)
         {
-            // Show reeling icon with fill amount and progressive scale
+
             ShowOnlyIcon(reelingIcon);
             if (reelingIcon != null)
             {
                 float progress = fishingRod.reelInProgress / fishingRod.CurrentReelDuration;
                 reelingIcon.fillAmount = progress;
 
-                // Scale up gradually from min to max as reeling progresses
                 float currentScale = Mathf.Lerp(reelingIconMinScale, reelingIconMaxScale, progress);
                 reelingIcon.transform.localScale = reelingIconOriginalScale * currentScale;
 
-                // Shake effect with speed control
                 if (Time.time >= nextShakeTime)
                 {
                     float shakeX = Random.Range(reelingIconShakeMin, reelingIconShakeMax);
@@ -107,7 +103,7 @@ public class FishingUI : MonoBehaviour
         }
         else if (fishingRod.hasBite)
         {
-            // Show pulsating bite icon
+
             ShowOnlyIcon(biteIcon);
             if (biteIcon != null)
             {
@@ -121,11 +117,10 @@ public class FishingUI : MonoBehaviour
             ShowOnlyIcon(waitingIcon);
             if (waitingIcon != null)
             {
-                // Bob up and down
+
                 float bobOffset = Mathf.Sin(Time.time * waitingIconBobSpeed) * waitingIconBobAmount;
                 waitingIcon.transform.localPosition = waitingIconOriginalPosition + new Vector3(0, bobOffset, 0);
 
-                // Rotate back and forth
                 float rotationAngle = Mathf.Sin(Time.time * waitingIconRotateSpeed) * waitingIconRotateAmount;
                 waitingIcon.transform.localRotation = waitingIconOriginalRotation * Quaternion.Euler(0, 0, rotationAngle);
             }

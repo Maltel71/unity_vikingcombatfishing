@@ -10,7 +10,7 @@ public class DeathScreen : MonoBehaviour
     public string mainMenuSceneName = "MainMenu";
 
     [Header("Highscore")]
-    [Tooltip("Fraga efter namn nar poangen racker till topplistan.")]
+    [Tooltip("Ask for a name when the score makes the top list.")]
     public bool askForNameOnHighscore = true;
 
     [Header("Sound Effects")]
@@ -54,19 +54,17 @@ public class DeathScreen : MonoBehaviour
 
     IEnumerator DeathSequence()
     {
-        // Wait for sound delay
+
         if (soundDelay > 0f)
         {
             yield return new WaitForSeconds(soundDelay);
         }
 
-        // Play death sound
         if (deathSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(deathSound, deathSoundVolume);
         }
 
-        // Fade in
         float elapsed = 0f;
         while (elapsed < fadeInDuration)
         {
@@ -77,11 +75,8 @@ public class DeathScreen : MonoBehaviour
 
         canvasGroup.alpha = 1f;
 
-        // Fiskepoang + blodspengar avgor plats pa topplistan
         int total = player != null ? player.TotalScore : 0;
 
-        // Steam behaller bara ens basta, sa vi kan skicka upp varje runda.
-        // Gor ingenting om Steam inte ar igang.
         SteamLeaderboards.UploadScore(total);
 
         if (askForNameOnHighscore && Highscores.Qualifies(total))
@@ -98,7 +93,7 @@ public class DeathScreen : MonoBehaviour
 
     IEnumerator AskForNameAndSave(int total)
     {
-        // Vilken plats hamnar man pa? Raknas ut innan resultatet lagts in.
+
         int placement = PredictPlacement(total);
 
         bool done = false;

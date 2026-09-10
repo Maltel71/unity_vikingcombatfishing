@@ -3,13 +3,9 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-/// <summary>
-/// Delade byggstenar for de meny-paneler som byggs i kod (PauseMenu, NameEntryScreen).
-/// Samlar farger och UI-bygge pa ett stalle sa allt ser likadant ut.
-/// </summary>
 public static class UiKit
 {
-    // Viking/tra-kansla med guldaccent
+
     public static readonly Color Dim = new Color(0f, 0f, 0f, 0.78f);
     public static readonly Color Panel = new Color(0.118f, 0.094f, 0.075f, 0.98f);
     public static readonly Color Border = new Color(0.78f, 0.635f, 0.294f, 1f);
@@ -20,7 +16,6 @@ public static class UiKit
     public static readonly Color TextDim = new Color(0.929f, 0.890f, 0.824f, 0.55f);
     public static readonly Color Track = new Color(0.086f, 0.071f, 0.055f, 1f);
 
-    /// <summary>Anvander samma typsnitt som resten av spelets UI om det gar att hitta.</summary>
     public static TMP_FontAsset FindGameFont()
     {
         TextMeshProUGUI[] texts = Object.FindObjectsByType<TextMeshProUGUI>(
@@ -33,7 +28,6 @@ public static class UiKit
         return null;
     }
 
-    /// <summary>Bada scenerna har redan en EventSystem, men om nagon tar bort den slutar knapparna funka.</summary>
     public static void EnsureEventSystem()
     {
         if (Object.FindFirstObjectByType<EventSystem>() != null) return;
@@ -89,8 +83,7 @@ public static class UiKit
 
     public static Button CreateButton(string name, Transform parent, string label, TMP_FontAsset font)
     {
-        // Knappens Image ar vit - Button multiplicerar in state-fargen,
-        // sa vit bas ger exakt de farger vi satter nedan.
+
         Image bg = CreateImage(name, parent, Color.white);
         Button btn = bg.gameObject.AddComponent<Button>();
         btn.targetGraphic = bg;
@@ -167,12 +160,6 @@ public static class UiKit
         return slider;
     }
 
-    /// <summary>
-    /// Panel med guldram. Ramen och panelen laggs i EN gemensam grupp, sa att
-    /// SetActive pa gruppen gommer bada. (Lag de som syskon forsvann bara panelen
-    /// nar man gomde den, och ramen blev kvar som en stor guldruta over allt annat.)
-    /// Returnerar gruppen. `content` ar rect:en man haller innehallet i.
-    /// </summary>
     public static GameObject CreatePanel(Transform parent, string name, float width, float height,
                                          out RectTransform content)
     {
@@ -192,12 +179,6 @@ public static class UiKit
         return group;
     }
 
-
-    // ---------------- Teckenanpassning ----------------
-    // Spelets typsnitt (Rgf_v1) har bara 83 tecken och saknar a-ring och umlaut.
-    // Skriver man "Gadda" med prick-a blir det en tom ruta. Fit() byter darfor ut
-    // tecken som fonten saknar mot narmaste ASCII. Dagen du lagger till glyferna
-    // i Font Asset Creator slutar den byta ut nagot av sig sjalv.
     static readonly char[] Missing = { 'å', 'ä', 'ö', 'Å', 'Ä', 'Ö', 'é', 'É', 'ü', 'Ü', 'æ', 'ø', 'Æ', 'Ø' };
     static readonly char[] Replacement = { 'a', 'a', 'o', 'A', 'A', 'O', 'e', 'E', 'u', 'U', 'a', 'o', 'A', 'O' };
 
@@ -225,14 +206,11 @@ public static class UiKit
         return sb != null ? sb.ToString() : text;
     }
 
-    /// <summary>Satter texten pa en TMP och anpassar tecknen till dess typsnitt.</summary>
     public static void SetText(TextMeshProUGUI label, string text)
     {
         if (label == null) return;
         label.text = Fit(text, label.font);
     }
-
-    // ---------------- Layouthjalpare ----------------
 
     public static void Stretch(RectTransform rt)
     {
@@ -251,7 +229,6 @@ public static class UiKit
         rt.sizeDelta = new Vector2(width, height);
     }
 
-    /// <summary>Placerar ett element relativt foralderns ovankant.</summary>
     public static void AnchorTop(RectTransform rt, float x, float y, float width, float height)
     {
         rt.anchorMin = new Vector2(0.5f, 1f);

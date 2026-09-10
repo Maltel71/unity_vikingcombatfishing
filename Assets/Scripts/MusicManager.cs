@@ -4,12 +4,12 @@ public class MusicManager : MonoBehaviour
 {
     public static MusicManager Instance;
 
-    [Header("Musik Clips")]
+    [Header("Music Clips")]
     public AudioClip lugnMusik;
     public AudioClip stridsMusik;
 
-    [Header("Atmosfär (Natur)")]
-    public AudioClip naturLjud; // Här lägger du ditt Suno-naturljud
+    [Header("Ambience")]
+    public AudioClip naturLjud;
     [Range(0f, 1f)]
     public float naturVolym = 0.5f;
 
@@ -20,7 +20,7 @@ public class MusicManager : MonoBehaviour
 
     private AudioSource audioSource1;
     private AudioSource audioSource2;
-    private AudioSource naturSource; // Ny källa för naturljud
+    private AudioSource naturSource;
 
     private AudioSource aktivKalla;
     private AudioSource inaktivKalla;
@@ -38,11 +38,9 @@ public class MusicManager : MonoBehaviour
             return;
         }
 
-        // Setup för musikkällor
         audioSource1 = gameObject.AddComponent<AudioSource>();
         audioSource2 = gameObject.AddComponent<AudioSource>();
 
-        // Setup för naturkälla
         naturSource = gameObject.AddComponent<AudioSource>();
         naturSource.loop = true;
         naturSource.playOnAwake = false;
@@ -60,7 +58,6 @@ public class MusicManager : MonoBehaviour
     {
         SpelaMusik(lugnMusik, audioSource1);
 
-        // Starta naturljudet direkt om det finns
         if (naturLjud != null)
         {
             naturSource.clip = naturLjud;
@@ -71,7 +68,7 @@ public class MusicManager : MonoBehaviour
 
     void Update()
     {
-        // Hantera fade för musik (precis som innan)
+
         if (aktivKalla.volume < musikVolym)
         {
             aktivKalla.volume = Mathf.MoveTowards(aktivKalla.volume, musikVolym, fadeHastighet * Time.deltaTime);
@@ -87,20 +84,18 @@ public class MusicManager : MonoBehaviour
             }
         }
 
-        // Uppdatera naturvolym i realtid om du ändrar i inspektorn
         if (naturSource.isPlaying)
         {
             naturSource.volume = naturVolym;
         }
     }
 
-    // --- Befintliga metoder för strid ---
     public void StartaStrid() { BytMusik(stridsMusik); }
     public void AvslutaStrid() { BytMusik(lugnMusik); }
 
     private void BytMusik(AudioClip nyttClip)
     {
-        if (aktivKalla.clip == nyttClip) return; // Byt inte om det redan spelas
+        if (aktivKalla.clip == nyttClip) return;
 
         AudioSource temp = aktivKalla;
         aktivKalla = inaktivKalla;
@@ -116,7 +111,6 @@ public class MusicManager : MonoBehaviour
         source.Play();
     }
 
-    // --- Ny metod om du vill byta naturljud mitt i spelet (t.ex. gå in i en grotta) ---
     public void BytNaturLjud(AudioClip nyttNatur)
     {
         naturLjud = nyttNatur;

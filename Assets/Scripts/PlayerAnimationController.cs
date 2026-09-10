@@ -6,7 +6,6 @@ public class PlayerAnimationController : MonoBehaviour
     private PlayerScript playerScript;
     private FishingRod fishingRod;
 
-    // Animation state names
     private const string IDLE = "IdleAnimRagnar";
     private const string WALK = "Ragnar_WalkAnimate";
     private const string ATTACK = "Ragnar_AttackAnimate";
@@ -17,7 +16,7 @@ public class PlayerAnimationController : MonoBehaviour
     private const string DANCE = "danceanimragnar";
 
     private string currentState;
-    private bool isPlayingAction = false; // Track if an action animation is playing
+    private bool isPlayingAction = false;
 
     void Start()
     {
@@ -39,12 +38,10 @@ public class PlayerAnimationController : MonoBehaviour
     {
         if (animator == null) return;
 
-        // Handle death states
         if (!playerScript.isAlive)
         {
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
 
-            // If death animation is playing and finished, switch to death idle
             if (currentState == DEATH && stateInfo.normalizedTime >= 1.0f)
             {
                 ChangeAnimationState(DEATH_IDLE);
@@ -56,7 +53,6 @@ public class PlayerAnimationController : MonoBehaviour
             return;
         }
 
-        // Check if action animation has finished
         if (isPlayingAction)
         {
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
@@ -66,20 +62,16 @@ public class PlayerAnimationController : MonoBehaviour
             }
             else
             {
-                return; // Don't change animation while action is playing
+                return;
             }
         }
 
-        // Fishing takes priority
         if (fishingRod != null && fishingRod.isReelingIn)
         {
             ChangeAnimationState(REELING);
             return;
         }
 
-        // Attack animation is now triggered by PlayerScript via PlayAttack()
-
-        // Movement
         float moveInput = Input.GetAxis("Horizontal");
         if (Mathf.Abs(moveInput) > 0.1f)
         {
@@ -120,6 +112,6 @@ public class PlayerAnimationController : MonoBehaviour
     public void StopDancing()
     {
         isPlayingAction = false;
-        // Will naturally return to idle/walk in Update()
+
     }
 }

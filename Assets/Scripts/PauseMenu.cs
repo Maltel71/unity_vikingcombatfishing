@@ -4,53 +4,36 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 
-/// <summary>
-/// Pausmeny som oppnas med Escape.
-///
-/// TVA LAGEN:
-/// 1. Ligger menyn i scenen (referenserna nedan ar ifyllda) anvands den rakt av.
-///    Sa far du riktiga GameObjects i Hierarchy som du kan flytta och styla om.
-///    Skapa den med menyn: Tools > Ragnar > Skapa pausmeny i scenen
-/// 2. Ar referenserna tomma bygger scriptet menyn i kod vid start, som reserv,
-///    sa spelet aldrig star utan pausmeny.
-///
-/// Fiskguiden fylls alltid i vid runtime fran FishingRod.fishTypes, oavsett lage.
-/// </summary>
 public class PauseMenu : MonoBehaviour
 {
-    // Andra scripts kan kolla detta for att sluta lyssna pa input medan spelet ar pausat
+
     public static bool IsPaused { get; private set; }
 
-    [Header("Scener")]
+    [Header("Scenes")]
     public string mainMenuSceneName = "MenuScene";
 
-    [Header("Beteende")]
+    [Header("Behaviour")]
     public KeyCode toggleKey = KeyCode.Escape;
 
-    [Header("UI-referenser")]
-    [Tooltip("Canvasen som gommer/visar hela menyn. Ar den tom byggs menyn i kod vid start.")]
+    [Header("UI References")]
+    [Tooltip("Canvas that shows or hides the whole menu. Leave empty to build the menu in code.")]
     public GameObject menuRoot;
     public GameObject mainPanel;
     public GameObject guidePanel;
     public Slider volumeSlider;
     public TextMeshProUGUI volumeValueLabel;
-    [Tooltip("Tom container som fiskraderna laggs i. Rensas och fylls varje gang guiden oppnas.")]
+    [Tooltip("Empty container for the fish rows. Cleared and refilled each time the guide opens.")]
     public RectTransform guideRows;
 
-    [Header("Knappar")]
+    [Header("Buttons")]
     public Button guideButton;
     public Button resumeButton;
     public Button quitButton;
     public Button backButton;
 
-    // Scener dar pausmenyn ska skapas automatiskt om ingen finns
     private static readonly string[] AutoCreateInScenes = { "MainScene" };
 
     private TMP_FontAsset gameFont;
-
-    // ---------------------------------------------------------------
-    // Bootstrap - skapar menyn automatiskt om scenen saknar en
-    // ---------------------------------------------------------------
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void ResetStatics()
@@ -67,7 +50,7 @@ public class PauseMenu : MonoBehaviour
 
     static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        // Efter en scenladdning ar spelet alltid igang igen
+
         Time.timeScale = 1f;
         IsPaused = false;
 
@@ -78,20 +61,16 @@ public class PauseMenu : MonoBehaviour
         }
         if (!wanted) return;
 
-        // Leta AVEN bland avstangda objekt. Standard-FindFirstObjectByType hoppar over
-        // inaktiva, sa en utlagd men avbockad pausmeny hittades inte - och da byggdes
-        // en till i kod, med standardfargerna ovanpa den egna designen.
         PauseMenu existing = FindFirstObjectByType<PauseMenu>(FindObjectsInactive.Include);
 
         if (existing != null)
         {
             if (!existing.gameObject.activeSelf)
             {
-                // Objektet maste vara pa for att Start() ska kora. Sjalva menyn
-                // gors osynlig av SetVisible(false), inte av den har bocken.
+
                 existing.gameObject.SetActive(true);
-                Debug.LogWarning("PauseMenu-objektet i scenen var avbockat och slogs pa. " +
-                                 "Bocka av PauseMenuCanvas istallet om du vill gomma menyn i editorn.");
+                Debug.LogWarning("The PauseMenu object in the scene was disabled and has been switched on. " +
+                                 "Disable PauseMenuCanvas instead if you want to hide the menu in the editor.");
             }
             return;
         }
@@ -100,13 +79,10 @@ public class PauseMenu : MonoBehaviour
         go.AddComponent<PauseMenu>();
     }
 
-    // ---------------------------------------------------------------
-
     void Start()
     {
         gameFont = UiKit.FindGameFont();
 
-        // Ingen meny utlagd i scenen - bygg en i kod som reserv
         if (menuRoot == null)
         {
             BuildInto(transform);
@@ -120,14 +96,14 @@ public class PauseMenu : MonoBehaviour
 
     void Update()
     {
-        // Namninmatningen efter doden ager tangentbordet
+
         if (NameEntryScreen.IsActive) return;
 
         if (Input.GetKeyDown(toggleKey))
         {
             if (IsPaused)
             {
-                // Star man i guiden tar Escape en tillbaka till menyn forst
+
                 if (guidePanel != null && guidePanel.activeSelf) ShowGuide(false);
                 else Resume();
             }
@@ -175,10 +151,6 @@ public class PauseMenu : MonoBehaviour
             volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
         }
     }
-
-    // ---------------------------------------------------------------
-    // Kommandon
-    // ---------------------------------------------------------------
 
     public void Pause()
     {
@@ -237,14 +209,6 @@ public class PauseMenu : MonoBehaviour
         UiKit.SetText(volumeValueLabel, Mathf.RoundToInt(value * 100f) + "%");
     }
 
-    // ---------------------------------------------------------------
-    // Bygge - anvands bade av reservlaget och av editorverktyget
-    // ---------------------------------------------------------------
-
-    /// <summary>
-    /// Bygger hela menyn som riktiga GameObjects under `parent` och fyller i
-    /// referenserna ovan. Anropas av Tools > Ragnar > Skapa pausmeny i scenen.
-    /// </summary>
     public void BuildInto(Transform parent)
     {
         if (gameFont == null) gameFont = UiKit.FindGameFont();
@@ -321,18 +285,13 @@ public class PauseMenu : MonoBehaviour
         UiKit.AnchorTop(backButton.GetComponent<RectTransform>(), 0f, -578f, 400f, 62f);
     }
 
-    // ---------------------------------------------------------------
-    // Fiskguidens innehall - lases alltid fran spelets faktiska data
-    // ---------------------------------------------------------------
-
     void BuildGuideRows()
     {
         if (guideRows == null) return;
 
         for (int i = guideRows.childCount - 1; i >= 0; i--)
         {
-            // Destroy sker forst i slutet av framen - gom raden direkt
-            // sa gamla och nya inte ritas ovanpa varandra en frame
+
             GameObject old = guideRows.GetChild(i).gameObject;
             old.SetActive(false);
             Destroy(old);
@@ -346,8 +305,6 @@ public class PauseMenu : MonoBehaviour
             return;
         }
 
-        // Slå ihop arter som har flera utseenden - regnbagen ligger som tva
-        // rader i fishTypes men ar en art och ska visas pa en rad.
         List<string> names = new List<string>();
         List<FlyingFish> infos = new List<FlyingFish>();
         List<float> weights = new List<float>();
@@ -380,7 +337,6 @@ public class PauseMenu : MonoBehaviour
 
         int count = names.Count;
 
-        // Krymp raderna om listan vaxer sa den alltid far plats
         float rowHeight = count > 12 ? 400f / count : 34f;
         float y = -rowHeight * 0.5f - 4f;
 
@@ -394,7 +350,6 @@ public class PauseMenu : MonoBehaviour
                 ? Mathf.RoundToInt(weights[i] / totalWeight * 100f) + "%"
                 : "-";
 
-            // Skrapfangst (0 eller minus i bada) far dovare farg
             bool junk = fish != null && fish.scoreValue <= 0 && fish.healthValue <= 0;
             Color color = junk ? UiKit.TextDim : UiKit.TextColor;
 

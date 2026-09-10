@@ -7,7 +7,7 @@ public class FishType
 {
     public GameObject fishPrefab;
     [Range(0f, 100f)]
-    public float weight = 10f; // Higher weight = more common
+    public float weight = 10f;
 }
 
 public class FishingRod : MonoBehaviour
@@ -15,15 +15,15 @@ public class FishingRod : MonoBehaviour
     [Header("Fish Types")]
     public FishType[] fishTypes;
 
-    [Header("Napp Settings")]
+    [Header("Bite Settings")]
     public float minBiteTime = 10f;
     public float maxBiteTime = 30f;
 
     [Header("Visual Effects")]
     public ParticleSystem waterSplashEffect;
 
-    [Header("Fangsttext")]
-    [Tooltip("Visa en text med fiskens namn nar den kommer upp ur vattnet.")]
+    [Header("Catch Text")]
+    [Tooltip("Show a label with the fish name when it comes out of the water.")]
     public bool showCatchPopup = true;
 
     [HideInInspector] public bool hasBite = false;
@@ -31,7 +31,6 @@ public class FishingRod : MonoBehaviour
     [HideInInspector] public bool isReelingIn = false;
     [HideInInspector] public float reelInProgress = 0f;
 
-    /// <summary>Vevtiden for fisken som nappat just nu. UI:t maste rakna pa den, inte pa reelInDuration.</summary>
     public float CurrentReelDuration
     {
         get { return currentReelDuration > 0f ? currentReelDuration : reelInDuration; }
@@ -41,7 +40,7 @@ public class FishingRod : MonoBehaviour
     public float reelInDuration = 3f;
     public Transform reelingPosition;
 
-    [Header("Kast Settings")]
+    [Header("Cast Settings")]
     public float minUpwardForce = 15f;
     public float maxUpwardForce = 25f;
     public float minHorizontalForce = 10f;
@@ -53,7 +52,7 @@ public class FishingRod : MonoBehaviour
     public Transform playerTransform;
     public FishPile fishPile;
 
-    [Header("Sound Effects 🔊")]
+    [Header("Sound Effects")]
     public AudioClip biteSound;
     public AudioClip castSound;
     public AudioClip catchSound;
@@ -86,8 +85,8 @@ public class FishingRod : MonoBehaviour
     public Transform pickupRangeObject;
 
     private Coroutine biteCoroutine;
-    private GameObject pendingFish;          // vald redan vid kastet
-    private float currentReelDuration;       // reelInDuration gangrat med artens svarighet
+    private GameObject pendingFish;
+    private float currentReelDuration;
     private Coroutine fadeOutCoroutine;
 
     void Start()
@@ -108,7 +107,6 @@ public class FishingRod : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
         }
 
-        // Create second audio source for reeling SFX
         reelingSFXSource = gameObject.AddComponent<AudioSource>();
     }
 
@@ -158,17 +156,15 @@ public class FishingRod : MonoBehaviour
             LostFish();
         }
 
-        // Play reeling grunt sounds sequentially
         if (isReelingIn && !audioSource.isPlaying && reelingGruntSounds.Length > 0)
         {
             audioSource.PlayOneShot(reelingGruntSounds[currentGruntIndex], gruntVolume);
             currentGruntIndex = (currentGruntIndex + 1) % reelingGruntSounds.Length;
         }
 
-        // Play reeling SFX sounds sequentially (separate from grunts)
         if (isReelingIn && !reelingSFXSource.isPlaying && reelingSFX.Length > 0)
         {
-            // Calculate volume based on reel progress
+
             float progress = reelInProgress / CurrentReelDuration;
             float currentVolume = Mathf.Lerp(reelingSFXStartVolume, reelingSFXMaxVolume, progress);
 
@@ -181,8 +177,6 @@ public class FishingRod : MonoBehaviour
     {
         isWaitingForBite = true;
 
-        // Fisken lottas redan nar man kastar, sa arten kan styra bade hur lange
-        // det tar innan det nappar och hur tungt den ar att veva in.
         pendingFish = GetRandomFish();
 
         float biteMultiplier = 1f;
@@ -212,10 +206,9 @@ public class FishingRod : MonoBehaviour
     {
         isReelingIn = true;
         reelInProgress = 0f;
-        currentGruntIndex = 0; // Reset to start of grunt sequence
-        currentReelingSFXIndex = 0; // Reset to start of reeling SFX sequence
+        currentGruntIndex = 0;
+        currentReelingSFXIndex = 0;
 
-        // Force player to face right for reeling animation
         if (playerTransform != null)
         {
             PlayerScript player = playerTransform.GetComponent<PlayerScript>();
@@ -224,7 +217,6 @@ public class FishingRod : MonoBehaviour
                 player.FaceRight();
             }
 
-            // Teleport player to reeling position if set
             if (reelingPosition != null)
             {
                 playerTransform.position = reelingPosition.position;
@@ -244,7 +236,6 @@ public class FishingRod : MonoBehaviour
             animController.PlayCatch();
         }
 
-        // Fisken lottades redan vid kastet i WaitForBite
         GameObject fishPrefab = pendingFish != null ? pendingFish : GetRandomFish();
         pendingFish = null;
 
@@ -274,7 +265,7 @@ public class FishingRod : MonoBehaviour
         FlyingFish caught = fish.GetComponent<FlyingFish>();
         if (caught != null)
         {
-            // Berattar for spelaren vad som kom upp ur vattnet
+
             if (showCatchPopup)
             {
                 CatchPopup.Show(caught.fishName, caught.healthValue, caught.scoreValue);
@@ -297,12 +288,9 @@ public class FishingRod : MonoBehaviour
             rb.gravityScale = 2f;
         }
 
-        // Random force values
         float randomUpwardForce = Random.Range(minUpwardForce, maxUpwardForce);
         float randomHorizontalForce = Random.Range(minHorizontalForce, maxHorizontalForce);
 
-        // Use waterSpawnPoint's rotation to determine direction.
-        // Saknas punkten kastas fisken at hoger som fallback istallet for att krascha.
         Vector2 direction = waterSpawnPoint != null ? (Vector2)waterSpawnPoint.right : Vector2.right;
 
         Vector2 force = new Vector2(
@@ -321,13 +309,10 @@ public class FishingRod : MonoBehaviour
         ResetFishing();
     }
 
-    /// <summary>Antal riktiga arter i listan. Skrapfangst som stoveln raknas inte.</summary>
     int CountRealSpecies()
     {
         if (fishTypes == null) return 0;
 
-        // Rakna UNIKA namn, inte rader. Samma art kan ha flera utseenden
-        // (regnbagen har tva) och ska da bara raknas en gang.
         List<string> seen = new List<string>();
 
         foreach (FishType ft in fishTypes)
@@ -352,7 +337,6 @@ public class FishingRod : MonoBehaviour
             return null;
         }
 
-        // Rakna ihop vikten - hoppa over tomma slots i inspektorn
         float totalWeight = 0f;
         foreach (FishType fishType in fishTypes)
         {
@@ -362,14 +346,12 @@ public class FishingRod : MonoBehaviour
 
         if (totalWeight <= 0f)
         {
-            Debug.LogWarning("FishingRod: fishTypes innehaller inga giltiga prefabs med vikt > 0!");
+            Debug.LogWarning("FishingRod: fishTypes has no valid prefabs with weight > 0.");
             return null;
         }
 
-        // Generate random value
         float randomValue = Random.Range(0f, totalWeight);
 
-        // Select fish based on weight
         float currentWeight = 0f;
         foreach (FishType fishType in fishTypes)
         {
@@ -381,7 +363,6 @@ public class FishingRod : MonoBehaviour
             }
         }
 
-        // Fallback: forsta giltiga prefaben
         foreach (FishType fishType in fishTypes)
         {
             if (fishType != null && fishType.fishPrefab != null) return fishType.fishPrefab;
@@ -415,7 +396,6 @@ public class FishingRod : MonoBehaviour
         isWaitingForBite = false;
         reelInProgress = 0f;
 
-        // Fade out reeling sounds
         if (fadeOutCoroutine != null)
         {
             StopCoroutine(fadeOutCoroutine);
@@ -454,7 +434,6 @@ public class FishingRod : MonoBehaviour
             yield return null;
         }
 
-        // Stop and reset volume
         if (audioSource != null)
         {
             audioSource.Stop();
@@ -480,7 +459,6 @@ public class FishingRod : MonoBehaviour
             Gizmos.color = Color.white;
         }
 
-        // Draw reeling position in editor
         if (reelingPosition != null)
         {
             Gizmos.color = Color.yellow;

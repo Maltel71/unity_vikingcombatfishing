@@ -13,7 +13,7 @@ public class AttackCollider : MonoBehaviour
         if (attackCollider != null)
         {
             attackCollider.isTrigger = true;
-            attackCollider.enabled = false; // Start disabled
+            attackCollider.enabled = false;
         }
     }
 
@@ -43,9 +43,7 @@ public class AttackCollider : MonoBehaviour
 
     public void ActivateAttack(float damage)
     {
-        // Kopiera listan innan vi slar. TakeDamage kan doda fienden, vilket
-        // stanger av dess collider -> OnTriggerExit2D -> listan andras mitt i
-        // loopen och kastar "Collection was modified".
+
         hitBuffer.Clear();
         hitBuffer.AddRange(enemiesInRange);
 

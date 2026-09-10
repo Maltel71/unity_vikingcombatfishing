@@ -2,15 +2,15 @@ using UnityEngine;
 
 public class FlyingFish : MonoBehaviour
 {
-    [Header("Fisk Stats - STÄLL IN I INSPECTOR")]
+    [Header("Fish Stats")]
     public string fishName = "Fisk";
     public int healthValue = 20;
     public int scoreValue = 20;
 
-    [Header("Svarighet - hur jobbig arten ar att fa upp")]
-    [Tooltip("Multiplikator pa spoets nappvantan. 0.5 = nappar dubbelt sa snabbt, 2 = tar dubbelt sa lang tid.")]
+    [Header("Difficulty")]
+    [Tooltip("Multiplier on the rod bite delay. 0.5 bites twice as fast, 2 takes twice as long.")]
     public float biteTimeMultiplier = 1f;
-    [Tooltip("Multiplikator pa vevtiden. Hogre = tyngre fisk som tar langre att veva in.")]
+    [Tooltip("Multiplier on reel time. Higher means a heavier fish that takes longer to land.")]
     public float reelDifficulty = 1f;
 
     [Header("Physics Settings")]
@@ -59,7 +59,6 @@ public class FlyingFish : MonoBehaviour
         rb.freezeRotation = false;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
-        // Apply random rotation spin
         rb.angularVelocity = Random.Range(minAngularVelocity, maxAngularVelocity);
 
         fishCollider = GetComponent<Collider2D>();
@@ -68,7 +67,6 @@ public class FlyingFish : MonoBehaviour
             fishCollider.isTrigger = false;
         }
 
-        // Enable the pickup range collider immediately
         if (pickupRangeObject != null)
         {
             Collider2D pickupCollider = pickupRangeObject.GetComponent<Collider2D>();
@@ -79,7 +77,6 @@ public class FlyingFish : MonoBehaviour
             }
         }
 
-        // Setup audio source
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
@@ -93,13 +90,11 @@ public class FlyingFish : MonoBehaviour
     {
         if (PauseMenu.IsPaused) return;
 
-        // Check for pickup input
         if (canPickup && Input.GetKeyDown(KeyCode.E))
         {
             PickupFish();
         }
 
-        // Change layer after time has passed
         if (!layerChanged && Time.time >= spawnTime + timeUntilGroundLayer)
         {
             ChangeToGroundLayer();
@@ -108,7 +103,7 @@ public class FlyingFish : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        // Play bounce sound with cooldown
+
         if (Time.time >= lastBounceSoundTime + bounceSoundCooldown)
         {
             PlayRandomBounceSound();
@@ -127,7 +122,6 @@ public class FlyingFish : MonoBehaviour
         {
             int randomIndex = Random.Range(0, bounceSounds.Length);
 
-            // Randomize pitch
             audioSource.pitch = Random.Range(minBouncePitch, maxBouncePitch);
 
             audioSource.PlayOneShot(bounceSounds[randomIndex], bounceVolume);

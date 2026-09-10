@@ -91,7 +91,6 @@ public class EnemyAnimationController : MonoBehaviour
         }
     }
 
-    // Called by Animation Event
     public void OnAttackHit()
     {
         if (enemyScript != null)

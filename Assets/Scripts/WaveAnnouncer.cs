@@ -18,7 +18,7 @@ public class WaveAnnouncer : MonoBehaviour
 
     void Start()
     {
-        // If waveText not assigned, try to get it from this object
+
         if (waveText == null)
         {
             waveText = GetComponent<TextMeshProUGUI>();
@@ -30,7 +30,6 @@ public class WaveAnnouncer : MonoBehaviour
             return;
         }
 
-        // Get or add CanvasGroup
         canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
         {
@@ -48,7 +47,6 @@ public class WaveAnnouncer : MonoBehaviour
         Announce($"Wave {waveNumber}");
     }
 
-    // Overload for fri text, t.ex. elitfienden "MUSCLE"
     public void AnnounceWave(string message)
     {
         Announce(message);
@@ -72,7 +70,6 @@ public class WaveAnnouncer : MonoBehaviour
 
         float elapsed = 0f;
 
-        // Fade in + Scale up
         while (elapsed < fadeInDuration)
         {
             elapsed += Time.deltaTime;
@@ -87,12 +84,10 @@ public class WaveAnnouncer : MonoBehaviour
         canvasGroup.alpha = 1f;
         transform.localScale = originalScale * scaleMultiplier;
 
-        // Hold
         yield return new WaitForSeconds(holdDuration);
 
         elapsed = 0f;
 
-        // Fade out + Scale down
         while (elapsed < fadeOutDuration)
         {
             elapsed += Time.deltaTime;

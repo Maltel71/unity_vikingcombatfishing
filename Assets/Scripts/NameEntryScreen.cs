@@ -2,11 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-/// <summary>
-/// Rutan dar man skriver in sitt namn nar man tagit sig in pa topplistan.
-/// Bygger sitt UI i kod och skapas av DeathScreen. Skriver med Input.inputString
-/// istallet for TMP_InputField sa den fungerar utan nagot uppsatt i editorn.
-/// </summary>
 public class NameEntryScreen : MonoBehaviour
 {
     public static bool IsActive { get; private set; }
@@ -18,7 +13,6 @@ public class NameEntryScreen : MonoBehaviour
     bool caretVisible = true;
     bool confirmed = false;
 
-    /// <summary>Skapar och visar rutan. onConfirm far det inskrivna namnet.</summary>
     public static NameEntryScreen Show(int score, int placement, System.Action<string> onConfirm)
     {
         GameObject go = new GameObject("NameEntryScreen");
@@ -57,7 +51,6 @@ public class NameEntryScreen : MonoBehaviour
         TextMeshProUGUI prompt = UiKit.CreateText("Prompt", panel, "Enter your name", 26f, UiKit.TextDim, font);
         UiKit.AnchorTop(prompt.rectTransform, 0f, -172f, 560f, 40f);
 
-        // Inmatningsfaltet ar bara en ruta med text - vi laser tangenterna sjalva
         Image field = UiKit.CreateImage("Field", panel, UiKit.Track);
         UiKit.AnchorTop(field.rectTransform, 0f, -226f, 480f, 66f);
 
@@ -98,7 +91,6 @@ public class NameEntryScreen : MonoBehaviour
             }
         }
 
-        // Blinkande markor. Ospalad tid sa den blinkar aven om spelet ar pausat.
         caretTimer += Time.unscaledDeltaTime;
         if (caretTimer >= 0.5f)
         {

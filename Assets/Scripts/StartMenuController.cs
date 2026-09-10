@@ -12,15 +12,15 @@ public class StartMenuController : MonoBehaviour
 
     [Header("Audio Settings")]
     [SerializeField] private AudioMixer audioMixer;
-    [SerializeField] private string masterVolumeParameter = "MasterVolume"; // Name of the exposed parameter in your Audio Mixer
+    [SerializeField] private string masterVolumeParameter = "MasterVolume";
 
     [Header("Scene Settings")]
-    [SerializeField] private string gameSceneName = "GameScene"; // Change this to your main game scene name
+    [SerializeField] private string gameSceneName = "GameScene";
     [SerializeField] private float defaultVolume = 0.75f;
 
     private void Start()
     {
-        // Set up button listeners
+
         if (startButton != null)
         {
             startButton.onClick.AddListener(OnStartButtonClicked);
@@ -31,42 +31,38 @@ public class StartMenuController : MonoBehaviour
             quitButton.onClick.AddListener(OnQuitButtonClicked);
         }
 
-        // Dela mixer-installningen med pausmenyn sa bada styr samma volym
         VolumeSettings.Mixer = audioMixer;
         VolumeSettings.MixerParameter = masterVolumeParameter;
 
-        // Set up volume slider
         if (masterVolumeSlider != null)
         {
-            // Load saved volume or use default
+
             float savedVolume = PlayerPrefs.GetFloat(VolumeSettings.PrefKey, defaultVolume);
             masterVolumeSlider.value = savedVolume;
             SetMasterVolume(savedVolume);
 
-            // Add listener for slider changes
             masterVolumeSlider.onValueChanged.AddListener(SetMasterVolume);
         }
         else
         {
-            // Ingen slider i menyn - se anda till att sparad volym galler
+
             VolumeSettings.Apply(VolumeSettings.Load());
         }
     }
 
     private void OnStartButtonClicked()
     {
-        // Load your main game scene
-        // Make sure to add your game scene to Build Settings (File > Build Settings)
+
         SceneManager.LoadScene(gameSceneName);
     }
 
     private void OnQuitButtonClicked()
     {
 #if UNITY_EDITOR
-        // If running in the Unity Editor
+
         UnityEditor.EditorApplication.isPlaying = false;
 #else
-            // If running as a build
+
             Application.Quit();
 #endif
     }
@@ -78,7 +74,7 @@ public class StartMenuController : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Clean up listeners to prevent memory leaks
+
         if (startButton != null)
         {
             startButton.onClick.RemoveListener(OnStartButtonClicked);

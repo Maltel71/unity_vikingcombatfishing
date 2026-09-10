@@ -27,10 +27,8 @@ public class EnemyScript : MonoBehaviour
     [Header("Wave System Connection")]
     public EndlessWaveManager manager;
 
-    // Satts av EndlessWaveManager vid spawn. Elitfiender (Muscle) raknas separat.
     [HideInInspector] public bool isElite = false;
 
-    /// <summary>Halsan vid spawn, efter elitmultiplikatorerna. Anvands av hpbaren.</summary>
     public int MaxHealth { get; private set; }
     [HideInInspector] public float eliteHealthMultiplier = 1f;
     [HideInInspector] public float eliteDamageMultiplier = 1f;
@@ -83,7 +81,6 @@ public class EnemyScript : MonoBehaviour
 
         ApplyVariations();
 
-        // Efter ApplyVariations - elitens health har redan multiplicerats upp
         MaxHealth = Mathf.Max(1, health);
     }
 
@@ -91,7 +88,7 @@ public class EnemyScript : MonoBehaviour
     {
         if (isElite)
         {
-            // Eliten ska se likadan ut varje gang - ingen slump, bara storre och tuffare
+
             transform.localScale *= eliteSizeMultiplier;
             movementSpeed = Random.Range(minMovementSpeed, maxMovementSpeed) * eliteSpeedMultiplier;
             health = Mathf.RoundToInt(health * eliteHealthMultiplier);
@@ -99,18 +96,16 @@ public class EnemyScript : MonoBehaviour
             return;
         }
 
-        // Random size
         float sizeMultiplier = Random.Range(minSizeMultiplier, maxSizeMultiplier);
         transform.localScale *= sizeMultiplier;
 
-        // Random movement speed from range
         movementSpeed = Random.Range(minMovementSpeed, maxMovementSpeed);
 
     }
 
     void Update()
     {
-        // Stop updating if dead
+
         if (health <= 0) return;
 
         if (playerTransform == null)
@@ -120,7 +115,6 @@ public class EnemyScript : MonoBehaviour
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
-        // Check if player is in attack range
         if (distanceToPlayer <= attackRange && Time.time >= nextAttackTime)
         {
             if (playerScript != null)
@@ -131,13 +125,12 @@ public class EnemyScript : MonoBehaviour
         }
         else if (distanceToPlayer > attackRange)
         {
-            // Move towards player only if not in attack range
+
             Vector3 direction = (playerTransform.position - transform.position).normalized;
             direction.y = 0;
             transform.position += direction * movementSpeed * Time.deltaTime;
         }
 
-        // Play idle sounds
         if (Time.time >= nextIdleSoundTime && idleSounds.Length > 0)
         {
             PlayRandomIdleSound();
@@ -239,18 +232,16 @@ public class EnemyScript : MonoBehaviour
     {
         if (animController != null)
         {
-            // Skadan kommer via Animation Event -> DealDamage()
+
             animController.PlayAttack();
         }
         else
         {
-            // Fiender utan Animator (t.ex. en enkel sprite-prefab) slar direkt,
-            // annars skulle de aldrig gora nagon skada alls.
+
             DealDamage();
         }
     }
 
-    // Called by Animation Event
     public void DealDamage()
     {
         if (playerTransform == null) return;

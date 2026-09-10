@@ -3,18 +3,6 @@ using Steamworks;
 using System;
 using System.Collections.Generic;
 
-/// <summary>
-/// Kopplingen mot Steams topplista.
-///
-/// Startar sig sjalv vid uppstart och overlever scenbyten. Ar Steam inte igang,
-/// eller kors spelet utanfor Steam, gor den ingenting alls - da anvander menyn
-/// den lokala listan i Highscores istallet. Spelet ska aldrig krascha for att
-/// Steam saknas.
-///
-/// Poangen som skickas upp ar PlayerScript.TotalScore (fiskepoang + blood money).
-/// Namnet pa Steam-listan ar spelarens Steam-namn, inte det man skriver in i
-/// namnrutan - det galler bara den lokala listan.
-/// </summary>
 public class SteamLeaderboards : MonoBehaviour
 {
     public const string LeaderboardName = "Highscore";
@@ -22,13 +10,11 @@ public class SteamLeaderboards : MonoBehaviour
 
     public static SteamLeaderboards Instance { get; private set; }
 
-    /// <summary>Sant nar Steam ar igang OCH topplistan ar hittad.</summary>
     public static bool IsReady
     {
         get { return Instance != null && Instance.initialized && Instance.leaderboardFound; }
     }
 
-    /// <summary>Sant nar Steam startade. Topplistan kan fortfarande vara pa vag.</summary>
     public static bool SteamRunning
     {
         get { return Instance != null && Instance.initialized; }
@@ -50,8 +36,6 @@ public class SteamLeaderboards : MonoBehaviour
     private CallResult<LeaderboardScoresDownloaded_t> downloadCall;
 
     private Action<List<Entry>> pendingDownload;
-
-    // ---------------- Uppstart ----------------
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Bootstrap()
@@ -76,7 +60,7 @@ public class SteamLeaderboards : MonoBehaviour
 #if !UNITY_EDITOR
         try
         {
-            // Startades spelet utan Steam startar vi om det via Steam-klienten
+
             if (SteamAPI.RestartAppIfNecessary(new AppId_t(GameAppId)))
             {
                 Application.Quit();
@@ -85,14 +69,14 @@ public class SteamLeaderboards : MonoBehaviour
         }
         catch (DllNotFoundException e)
         {
-            Debug.LogWarning("Steam: steam_api64.dll hittades inte. Topplistan ar av. " + e.Message);
+            Debug.LogWarning("Steam: steam_api64.dll not found. Leaderboard disabled. " + e.Message);
             return;
         }
 #endif
 
         if (!Packsize.Test())
         {
-            Debug.LogWarning("Steam: fel plattformspackning - topplistan ar av.");
+            Debug.LogWarning("Steam: wrong platform packaging, leaderboard disabled.");
             return;
         }
 
@@ -102,14 +86,14 @@ public class SteamLeaderboards : MonoBehaviour
         }
         catch (DllNotFoundException e)
         {
-            Debug.LogWarning("Steam: kunde inte ladda biblioteket. Topplistan ar av. " + e.Message);
+            Debug.LogWarning("Steam: could not load the library. Leaderboard disabled. " + e.Message);
             return;
         }
 
         if (!initialized)
         {
-            // Helt normalt i editorn utan Steam igang, eller utanfor Steam
-            Debug.Log("Steam ar inte igang - spelet anvander den lokala topplistan.");
+
+            Debug.Log("Steam is not running, falling back to the local leaderboard.");
             return;
         }
 
@@ -117,7 +101,6 @@ public class SteamLeaderboards : MonoBehaviour
         uploadCall = CallResult<LeaderboardScoreUploaded_t>.Create(OnScoreUploaded);
         downloadCall = CallResult<LeaderboardScoresDownloaded_t>.Create(OnScoresDownloaded);
 
-        // Finns listan inte pa Steam-sidan skapas den har - fallande, numerisk
         SteamAPICall_t call = SteamUserStats.FindOrCreateLeaderboard(
             LeaderboardName,
             ELeaderboardSortMethod.k_ELeaderboardSortMethodDescending,
@@ -156,9 +139,6 @@ public class SteamLeaderboards : MonoBehaviour
         }
     }
 
-    // ---------------- Publika anrop ----------------
-
-    /// <summary>Skickar upp resultatet. Steam behaller bara spelarens basta.</summary>
     public static void UploadScore(int score)
     {
         if (!IsReady || score <= 0) return;
@@ -171,10 +151,6 @@ public class SteamLeaderboards : MonoBehaviour
         Instance.uploadCall.Set(call);
     }
 
-    /// <summary>
-    /// Hamtar de basta placeringarna. onDone anropas nar svaret kommit.
-    /// Returnerar false direkt om Steam inte ar tillgangligt - anvand lokala listan da.
-    /// </summary>
     public static bool RequestTopEntries(int count, Action<List<Entry>> onDone)
     {
         if (!IsReady || onDone == null) return false;
@@ -190,13 +166,11 @@ public class SteamLeaderboards : MonoBehaviour
         return true;
     }
 
-    // ---------------- Svar fran Steam ----------------
-
     void OnLeaderboardFound(LeaderboardFindResult_t result, bool ioFailure)
     {
         if (ioFailure || result.m_bLeaderboardFound == 0)
         {
-            Debug.LogWarning("Steam: hittade inte topplistan \"" + LeaderboardName + "\".");
+            Debug.LogWarning("Steam: leaderboard not found: \"" + LeaderboardName + "\".");
             return;
         }
 
@@ -208,7 +182,7 @@ public class SteamLeaderboards : MonoBehaviour
     {
         if (ioFailure || result.m_bSuccess == 0)
         {
-            Debug.LogWarning("Steam: kunde inte skicka upp poangen.");
+            Debug.LogWarning("Steam: could not upload the score.");
             return;
         }
 

@@ -1,19 +1,8 @@
 using UnityEngine;
 using Steamworks;
 
-/// <summary>
-/// Spelets achievements.
-///
-/// Achievements MASTE finnas upplagda pa Steamworks App Admin innan de gar att
-/// lasa upp - API:t kan bara satta dem, inte skapa dem. API-namnen nedan maste
-/// stamma exakt med det som star dar.
-///
-/// Allt speglas i PlayerPrefs, sa framstegen raknas aven utan Steam och samma
-/// achievement skickas aldrig upp tva ganger.
-/// </summary>
 public static class SteamAchievements
 {
-    // ---------------- API-namn (matcha dessa pa Steamworks) ----------------
 
     public const string FirstCatch = "ACH_FIRST_CATCH";
     public const string OldBoot = "ACH_OLD_BOOT";
@@ -26,29 +15,22 @@ public static class SteamAchievements
     public const string Score1000 = "ACH_SCORE_1000";
     public const string DanceBoss = "ACH_DANCE_BOSS";
 
-    // ---------------- Trosklar ----------------
-
     public const int GnomeGoalSmall = 50;
     public const int GnomeGoalLarge = 250;
     public const int WaveGoal = 10;
     public const int ScoreGoal = 1000;
     public const int BossKindGoal = 3;
 
-    // ---------------- PlayerPrefs-nycklar ----------------
-
     const string UnlockedPrefix = "ACH_UNLOCKED_";
     const string GnomeCountKey = "ACH_GNOMES_TOTAL";
-    const string BossKindsKey = "ACH_BOSS_KINDS";     // namn separerade med |
-    const string SpeciesKey = "ACH_FISH_SPECIES";     // namn separerade med |
-
-    // ---------------- Grundlaggande upplasning ----------------
+    const string BossKindsKey = "ACH_BOSS_KINDS";
+    const string SpeciesKey = "ACH_FISH_SPECIES";
 
     public static bool IsUnlocked(string id)
     {
         return PlayerPrefs.GetInt(UnlockedPrefix + id, 0) == 1;
     }
 
-    /// <summary>Laser upp en achievement. Gor ingenting om den redan ar tagen.</summary>
     public static void Unlock(string id)
     {
         if (string.IsNullOrEmpty(id) || IsUnlocked(id)) return;
@@ -58,7 +40,6 @@ public static class SteamAchievements
 
         if (!SteamLeaderboards.SteamRunning) return;
 
-        // Ar den redan satt pa Steam behover vi inte skicka igen
         bool already;
         if (SteamUserStats.GetAchievement(id, out already) && already) return;
 
@@ -69,9 +50,6 @@ public static class SteamAchievements
         }
     }
 
-    // ---------------- Spelhandelser ----------------
-
-    /// <summary>Anropas nar en fangst kommer upp ur vattnet.</summary>
     public static void OnFishCaught(string fishName, bool isJunk, int totalSpecies)
     {
         if (isJunk)
@@ -86,7 +64,6 @@ public static class SteamAchievements
 
         int caught = AddToSet(SpeciesKey, fishName);
 
-        // Skrapfangster raknas inte med i totalSpecies
         if (totalSpecies > 0 && caught >= totalSpecies)
         {
             Unlock(AllFish);
@@ -98,9 +75,6 @@ public static class SteamAchievements
         int total = PlayerPrefs.GetInt(GnomeCountKey, 0) + 1;
         PlayerPrefs.SetInt(GnomeCountKey, total);
 
-        // PlayerPrefs.Save() skriver till disk. Att gora det vid varje gnomdod
-        // ger ryck mitt i striden - vi sparar var tionde istallet. Unity sparar
-        // anda automatiskt nar spelet avslutas.
         if (total % 10 == 0) PlayerPrefs.Save();
 
         if (total >= GnomeGoalSmall) Unlock(Gnomes50);
@@ -127,15 +101,11 @@ public static class SteamAchievements
         if (totalScore >= ScoreGoal) Unlock(Score1000);
     }
 
-    /// <summary>Anropas nar spelaren borjar dansa. Bara kul om en boss ser pa.</summary>
     public static void OnDanceStarted(bool bossAlive)
     {
         if (bossAlive) Unlock(DanceBoss);
     }
 
-    // ---------------- Hjalpare ----------------
-
-    /// <summary>Lagger till ett namn i en sparad mangd och returnerar antalet unika.</summary>
     static int AddToSet(string key, string value)
     {
         string stored = PlayerPrefs.GetString(key, "");
@@ -148,7 +118,6 @@ public static class SteamAchievements
             PlayerPrefs.Save();
         }
 
-        // Antal poster = antal separatorer minus ett
         int count = 0;
         for (int i = 0; i < stored.Length; i++)
         {
@@ -157,7 +126,6 @@ public static class SteamAchievements
         return Mathf.Max(0, count - 1);
     }
 
-    /// <summary>Nollstaller allt lokalt. Rensar INTE pa Steam - det gors i konsolen dar.</summary>
     public static void ResetLocalProgress()
     {
         string[] all = { FirstCatch, OldBoot, AllFish, Gnomes50, Gnomes250,

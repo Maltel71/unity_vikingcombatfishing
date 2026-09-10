@@ -5,10 +5,10 @@ public class ScoreDisplay : MonoBehaviour
 {
     public TextMeshProUGUI scoreText;
 
-    [Header("Blodspengar")]
-    [Tooltip("Egen text for blodspengarna. Lamnas den tom skrivs de pa rad tva i scoreText.")]
+    [Header("Blood Money")]
+    [Tooltip("Separate label for blood money. Leave empty to print it on line two of scoreText.")]
     public TextMeshProUGUI bloodText;
-    [Tooltip("Visa antal dodade bossar inom parentes.")]
+    [Tooltip("Show the boss kill count in brackets.")]
     public bool showBossCount = true;
 
     [Header("Animation Settings")]
@@ -51,7 +51,6 @@ public class ScoreDisplay : MonoBehaviour
             lastBlood = player.bloodMoney;
         }
 
-        // Setup audio source
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
@@ -63,7 +62,7 @@ public class ScoreDisplay : MonoBehaviour
     {
         if (player != null && scoreText != null)
         {
-            // Check if score changed
+
             if (player.playerScore != lastScore)
             {
                 OnScoreChanged();
@@ -84,11 +83,10 @@ public class ScoreDisplay : MonoBehaviour
             }
             else
             {
-                // Ingen egen text tilldelad - lagg blodspengarna pa rad tva
+
                 scoreText.text = "Score: " + player.playerScore + "\n" + blood;
             }
 
-            // Handle bounce animation
             if (isBouncing)
             {
                 bounceTimer += Time.deltaTime;
@@ -96,13 +94,13 @@ public class ScoreDisplay : MonoBehaviour
 
                 if (progress < 0.5f)
                 {
-                    // Scale up
+
                     float scale = Mathf.Lerp(1f, bounceScale, progress * 2f);
                     scoreText.transform.localScale = originalScale * scale;
                 }
                 else
                 {
-                    // Scale down
+
                     float scale = Mathf.Lerp(bounceScale, 1f, (progress - 0.5f) * 2f);
                     scoreText.transform.localScale = originalScale * scale;
                 }
@@ -130,17 +128,15 @@ public class ScoreDisplay : MonoBehaviour
 
     void OnScoreChanged()
     {
-        // Start bounce animation
+
         isBouncing = true;
         bounceTimer = 0f;
 
-        // Play particle effect
         if (scoreParticle != null)
         {
             scoreParticle.Play();
         }
 
-        // Play sound effect
         if (scoreSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(scoreSound, scoreVolume);

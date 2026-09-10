@@ -15,57 +15,55 @@ public class EndlessWaveManager : MonoBehaviour
     public int enemiesIncreasePerWave = 2;
     public float spawnDelay = 1.0f;
 
-    [Header("Bossar")]
-    [Tooltip("En post per boss. Ar listan tom anvands Muscle Prefab nedan istallet.")]
+    [Header("Bosses")]
+    [Tooltip("One entry per boss. If the list is empty the Muscle Prefab below is used instead.")]
     public BossType[] bosses;
 
-    [Tooltip("RESERV: anvands bara om listan Bosses ar tom. Gamla enskilda bossfaltet.")]
+    [Tooltip("Fallback, only used when the Bosses list is empty.")]
     public GameObject musclePrefab;
 
     public BossOrder bossOrder = BossOrder.InOrder;
 
-    [Tooltip("Antal dodade gnomer innan forsta bossen.")]
+    [Tooltip("Gnome kills required before the first boss.")]
     public int gnomeKillsPerBoss = 20;
-    [Tooltip("Hur manga fler gnomer som kravs for varje boss du besegrat.")]
+    [Tooltip("Extra gnome kills required per boss already defeated.")]
     public int killsIncreasePerBoss = 5;
 
-    [Tooltip("Bossen kommer ensam - inga vanliga gnomer spawnas medan han lever.")]
+    [Tooltip("The boss arrives alone. No regular gnomes spawn while it is alive.")]
     public bool bossComesAlone = true;
-    [Tooltip("Sakerhetsventil: fortsatt med vanliga vagor om bossen inte dott inom sa har manga sekunder. 0 = vanta hur lange som helst.")]
+    [Tooltip("Safety valve. Resume normal waves if the boss is not dead after this many seconds. 0 waits forever.")]
     public float bossMaxDuration = 120f;
-    [Tooltip("Valfria egna spawnpunkter for bossar. Tom = anvander vanliga spawnPoints.")]
+    [Tooltip("Optional dedicated boss spawn points. Empty falls back to the normal spawnPoints.")]
     public Transform[] bossSpawnPoints;
 
-    [Header("Bossen blir starkare for varje boss du besegrat")]
-    [Tooltip("0.3 = +30% HP per niva. Niva 1 ar oforandrad, niva 2 far +30%, niva 3 +60% osv.")]
+    [Header("Boss Scaling")]
+    [Tooltip("0.3 = +30% HP per level. Level 1 is unchanged, level 2 gets +30%, level 3 +60% and so on.")]
     public float healthScalePerLevel = 0.3f;
     public float damageScalePerLevel = 0.12f;
     public float sizeScalePerLevel = 0.05f;
     public float speedScalePerLevel = 0.05f;
-    [Tooltip("Tak for hur hogt bossnivan kan ga. 0 = inget tak.")]
+    [Tooltip("Cap on boss level. 0 means no cap.")]
     public int maxBossLevel = 0;
-    [Tooltip("Skriver ut nivan som romersk siffra efter namnet, t.ex. MUSCLE III.")]
+    [Tooltip("Print the level as a roman numeral after the name, for example MUSCLE III.")]
     public bool showBossLevel = true;
 
-    [Header("Blodspengar")]
-    [Tooltip("Blodspengar per dodad vanlig gnom.")]
+    [Header("Blood Money")]
+    [Tooltip("Blood money per regular gnome killed.")]
     public int bloodPerGnome = 5;
-    [Tooltip("Blodspengar per dodad boss.")]
+    [Tooltip("Blood money per boss killed.")]
     public int bloodPerBoss = 50;
 
     [Header("UI")]
     public WaveAnnouncer waveAnnouncer;
 
-    [Header("Musik")]
-    [Tooltip("Nar stridsmusiken ska spelas. BossOnly = bara under bossmoten.")]
+    [Header("Music")]
+    [Tooltip("When combat music plays. BossOnly means boss fights only.")]
     public CombatMusicMode combatMusic = CombatMusicMode.BossOnly;
 
-    // Lasbar statistik for UI / framtida highscore
     public int TotalGnomesKilled { get; private set; }
     public int LiveEnemies { get; private set; }
     public int BossesDefeated { get; private set; }
 
-    /// <summary>Nivan pa nasta boss. Forsta bossen ar niva 1.</summary>
     public int BossLevel
     {
         get
@@ -75,7 +73,6 @@ public class EndlessWaveManager : MonoBehaviour
         }
     }
 
-    /// <summary>Hur manga gnomer som kravs innan nasta boss.</summary>
     public int KillsNeededForNextBoss
     {
         get { return gnomeKillsPerBoss + killsIncreasePerBoss * BossesDefeated; }
@@ -86,18 +83,15 @@ public class EndlessWaveManager : MonoBehaviour
     private int nextBossIndex = 0;
     private bool bossQueued = false;
     private bool bossAlive = false;
-    private bool bossEncounterActive = false;   // sant fran utropet tills han ar dod
+    private bool bossEncounterActive = false;
     private string currentBossName = "";
     private bool combatMusicPlaying = false;
     private PlayerScript player;
 
-    /// <summary>Lever en boss just nu? Anvands bl.a. av dans-achievementen.</summary>
     public bool BossAlive { get { return bossAlive; } }
 
-    /// <summary>Bossen som ar ute just nu, eller null. Hpbaren laser den.</summary>
     public EnemyScript ActiveBoss { get; private set; }
 
-    /// <summary>Namnet som ska visas over hpbaren, t.ex. "TROLLET II".</summary>
     public string ActiveBossLabel { get; private set; }
 
     void Start()
@@ -111,8 +105,6 @@ public class EndlessWaveManager : MonoBehaviour
     {
         UpdateCombatMusic();
     }
-
-    // ---------------- Bosslista ----------------
 
     void BuildBossList()
     {
@@ -129,7 +121,6 @@ public class EndlessWaveManager : MonoBehaviour
             }
         }
 
-        // Ingen lista ifylld men det gamla enskilda faltet ar satt - anvand det
         if (activeBosses.Count == 0 && musclePrefab != null)
         {
             BossType fallback = new BossType();
@@ -155,8 +146,6 @@ public class EndlessWaveManager : MonoBehaviour
         return boss;
     }
 
-    // ---------------- Musik ----------------
-
     void UpdateCombatMusic()
     {
         if (combatMusic == CombatMusicMode.Off) return;
@@ -178,18 +167,16 @@ public class EndlessWaveManager : MonoBehaviour
         }
     }
 
-    // ---------------- Vagloop ----------------
-
     IEnumerator WaveLoop()
     {
-        // Wait a moment to ensure all UI is initialized
+
         yield return new WaitForSeconds(0.5f);
 
         currentWave = 1;
 
         while (true)
         {
-            // Star en boss pa tur? Da kor vi en bossvag istallet for en vanlig vag.
+
             if (bossQueued && HasBosses)
             {
                 yield return StartCoroutine(BossWave());
@@ -218,7 +205,7 @@ public class EndlessWaveManager : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
-            // Blev en boss koad mitt i vagen: avbryt resten sa han kan komma ensam
+
             if (bossQueued && HasBosses && bossComesAlone)
             {
                 yield break;
@@ -241,8 +228,6 @@ public class EndlessWaveManager : MonoBehaviour
         SpawnEnemy(prefab, sp, null);
     }
 
-    // ---------------- Bossvag ----------------
-
     IEnumerator BossWave()
     {
         bossQueued = false;
@@ -253,7 +238,6 @@ public class EndlessWaveManager : MonoBehaviour
             yield break;
         }
 
-        // Vanta ut kvarvarande gnomer sa han verkligen kommer ensam
         if (bossComesAlone)
         {
             while (LiveEnemies > 0)
@@ -262,7 +246,6 @@ public class EndlessWaveManager : MonoBehaviour
             }
         }
 
-        // Musiken slar om redan vid utropet sa han far en entre
         bossEncounterActive = true;
 
         if (waveAnnouncer != null)
@@ -273,7 +256,6 @@ public class EndlessWaveManager : MonoBehaviour
 
         SpawnBoss(boss);
 
-        // Vanta tills han ar dod (eller tills sakerhetsventilen loser ut)
         float elapsed = 0f;
         while (bossAlive)
         {
@@ -325,8 +307,6 @@ public class EndlessWaveManager : MonoBehaviour
         ActiveBoss = SpawnEnemy(boss.prefab, sp, boss);
     }
 
-    // ---------------- Gemensam spawn ----------------
-
     EnemyScript SpawnEnemy(GameObject prefab, Transform spawnPoint, BossType boss)
     {
         GameObject newEnemy = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
@@ -339,8 +319,7 @@ public class EndlessWaveManager : MonoBehaviour
 
             if (boss != null)
             {
-                // Maste satas fore EnemyScript.Start() - dar anvands de i ApplyVariations().
-                // Niva 1 = bossens grundvarden, varje niva darefter skalar upp dem.
+
                 int steps = BossLevel - 1;
                 enemy.eliteHealthMultiplier = boss.healthMultiplier * (1f + healthScalePerLevel * steps);
                 enemy.eliteDamageMultiplier = boss.damageMultiplier * (1f + damageScalePerLevel * steps);
@@ -353,8 +332,6 @@ public class EndlessWaveManager : MonoBehaviour
         return enemy;
     }
 
-    // ---------------- Callbacks fran EnemyScript ----------------
-
     public void OnEnemyKilled(EnemyScript enemy)
     {
         LiveEnemies = Mathf.Max(0, LiveEnemies - 1);
@@ -366,7 +343,7 @@ public class EndlessWaveManager : MonoBehaviour
             BossesDefeated++;
             AwardBlood(bloodPerBoss, true);
             SteamAchievements.OnBossKilled(currentBossName);
-            return; // bosskill raknas inte mot nasta boss
+            return;
         }
 
         TotalGnomesKilled++;
@@ -394,13 +371,10 @@ public class EndlessWaveManager : MonoBehaviour
         }
     }
 
-    // Bakatkompatibel wrapper
     public void OnGnomeKilled()
     {
         OnEnemyKilled(null);
     }
-
-    // ---------------- Smatt och gott ----------------
 
     static readonly int[] RomanValues = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
     static readonly string[] RomanNumerals = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
