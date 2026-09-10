@@ -27,7 +27,7 @@ public class CatchPopup : MonoBehaviour
     public Color junkColor = new Color(0.62f, 0.58f, 0.52f, 1f);
 
     [Header("Content")]
-    [Tooltip("Show HP and points on line two.")]
+    [Tooltip("Show the points on line two.")]
     public bool showValues = true;
 
     private RectTransform rt;
@@ -64,6 +64,11 @@ public class CatchPopup : MonoBehaviour
 
     public static void Show(string fishName, int healthValue, int scoreValue)
     {
+        Resolve().ShowCatch(fishName, healthValue, scoreValue);
+    }
+
+    static CatchPopup Resolve()
+    {
         CatchPopup popup = Instance;
 
         if (popup == null)
@@ -83,7 +88,7 @@ public class CatchPopup : MonoBehaviour
             popup = go.AddComponent<CatchPopup>();
         }
 
-        popup.ShowCatch(fishName, healthValue, scoreValue);
+        return popup;
     }
 
     public void ShowCatch(string fishName, int healthValue, int scoreValue)

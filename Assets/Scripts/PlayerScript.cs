@@ -176,7 +176,10 @@ public class PlayerScript : MonoBehaviour
     {
         if (!isAlive || damage <= 0) return;
 
+        int lost = Mathf.Min(damage, playerHealth);
         playerHealth -= damage;
+
+        HealthPopup.Show(-lost);
 
         if (bloodParticle != null)
         {
@@ -196,15 +199,20 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-    public void CollectFish(int health, int score)
+    public void AddFishScore(int score)
     {
-        if (!isAlive) return;
-
-        playerHealth = Mathf.Clamp(playerHealth + health, 0, maxHealth);
+        if (!isAlive || score == 0) return;
 
         playerScore = Mathf.Max(0, playerScore + score);
-
         SteamAchievements.OnScoreChanged(TotalScore);
+    }
+
+    public void AddFishHealth(int health)
+    {
+        if (!isAlive || health == 0) return;
+
+        playerHealth = Mathf.Clamp(playerHealth + health, 0, maxHealth);
+        HealthPopup.Show(health);
 
         if (playerHealth <= 0)
         {

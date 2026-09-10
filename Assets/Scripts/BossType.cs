@@ -16,7 +16,14 @@ public class BossType
     public float damageMultiplier = 1f;
     [Tooltip("Boss size. Unlike regular gnomes this is not randomised.")]
     public float sizeMultiplier = 1.6f;
+    [Tooltip("Multiplier on walking speed.")]
     public float speedMultiplier = 1.5f;
+    [Tooltip("Multiplier on attacks per second. 2 swings twice as often, 0.5 half as often.")]
+    public float attackSpeedMultiplier = 1f;
+
+    [Header("Look")]
+    [Tooltip("Tint laid over the sprite so bosses sharing one model can still be told apart.")]
+    public Color tint = Color.white;
 }
 
 public enum CombatMusicMode

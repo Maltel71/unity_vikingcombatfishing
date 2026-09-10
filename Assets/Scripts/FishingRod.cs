@@ -266,9 +266,18 @@ public class FishingRod : MonoBehaviour
         if (caught != null)
         {
 
+            PlayerScript player = playerTransform != null
+                ? playerTransform.GetComponent<PlayerScript>()
+                : FindFirstObjectByType<PlayerScript>();
+
+            if (player != null)
+            {
+                player.AddFishScore(caught.scoreValue);
+            }
+
             if (showCatchPopup)
             {
-                CatchPopup.Show(caught.fishName, caught.healthValue, caught.scoreValue);
+                CatchPopup.Show(caught.fishName, 0, caught.scoreValue);
             }
 
             bool junk = caught.healthValue <= 0 && caught.scoreValue <= 0;

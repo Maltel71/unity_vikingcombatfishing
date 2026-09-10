@@ -34,6 +34,8 @@ public class EnemyScript : MonoBehaviour
     [HideInInspector] public float eliteDamageMultiplier = 1f;
     [HideInInspector] public float eliteSizeMultiplier = 1.6f;
     [HideInInspector] public float eliteSpeedMultiplier = 1.5f;
+    [HideInInspector] public float eliteAttackSpeedMultiplier = 1f;
+    [HideInInspector] public Color eliteTint = Color.white;
 
     [Header("Sound Effects")]
     public AudioClip[] hurtSounds;
@@ -91,8 +93,15 @@ public class EnemyScript : MonoBehaviour
 
             transform.localScale *= eliteSizeMultiplier;
             movementSpeed = Random.Range(minMovementSpeed, maxMovementSpeed) * eliteSpeedMultiplier;
-            health = Mathf.RoundToInt(health * eliteHealthMultiplier);
-            damage = Mathf.RoundToInt(damage * eliteDamageMultiplier);
+            health = Mathf.Max(1, Mathf.RoundToInt(health * eliteHealthMultiplier));
+            damage = Mathf.Max(1, Mathf.RoundToInt(damage * eliteDamageMultiplier));
+            attackSpeed = Mathf.Max(0.05f, attackSpeed * eliteAttackSpeedMultiplier);
+
+            SpriteRenderer sprite = GetComponent<SpriteRenderer>();
+            if (sprite != null && eliteTint.a > 0f)
+            {
+                sprite.color = eliteTint;
+            }
             return;
         }
 

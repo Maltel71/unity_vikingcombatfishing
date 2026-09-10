@@ -42,6 +42,7 @@ public class EndlessWaveManager : MonoBehaviour
     public float damageScalePerLevel = 0.12f;
     public float sizeScalePerLevel = 0.05f;
     public float speedScalePerLevel = 0.05f;
+    public float attackSpeedScalePerLevel = 0.06f;
     [Tooltip("Cap on boss level. 0 means no cap.")]
     public int maxBossLevel = 0;
     [Tooltip("Print the level as a roman numeral after the name, for example MUSCLE III.")]
@@ -325,6 +326,8 @@ public class EndlessWaveManager : MonoBehaviour
                 enemy.eliteDamageMultiplier = boss.damageMultiplier * (1f + damageScalePerLevel * steps);
                 enemy.eliteSizeMultiplier = boss.sizeMultiplier * (1f + sizeScalePerLevel * steps);
                 enemy.eliteSpeedMultiplier = boss.speedMultiplier * (1f + speedScalePerLevel * steps);
+                enemy.eliteAttackSpeedMultiplier = boss.attackSpeedMultiplier * (1f + attackSpeedScalePerLevel * steps);
+                enemy.eliteTint = boss.tint;
             }
         }
 

@@ -167,7 +167,7 @@ public class FlyingFish : MonoBehaviour
             PlayerScript player = playerInRange.GetComponent<PlayerScript>();
             if (player != null)
             {
-                player.CollectFish(healthValue, scoreValue);
+                player.AddFishHealth(healthValue);
 
                 if (fishPile != null)
                 {
