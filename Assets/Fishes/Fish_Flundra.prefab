@@ -137,6 +137,14 @@ MonoBehaviour:
   fishName: Flounder
   healthValue: 35
   scoreValue: 60
+  freshDuration: 12
+  spoiledHealthValue: -8
+  spoiledDuration: 10
+  rotFadeDuration: 1.2
+  spoiledTint: {r: 0.55, g: 0.68, b: 0.36, a: 1}
+  flySound: {fileID: 8300000, guid: 0f7444e7eeb63b74eb24abe2eb83eb74, type: 3}
+  flyVolume: 0.1
+  rageOnPickup: 0
   biteTimeMultiplier: 1.7
   reelDifficulty: 1.7
   gravityScale: 2

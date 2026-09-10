@@ -38,6 +38,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6861011552313934589
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -83,6 +84,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 5
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 4858110b800a8dc4ca7bf07188fca416, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -92,7 +94,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!50 &7823993896824925625
 Rigidbody2D:
@@ -136,12 +137,26 @@ MonoBehaviour:
   fishName: Pike
   healthValue: 20
   scoreValue: 25
-  biteTimeMultiplier: 1.0
+  freshDuration: 12
+  spoiledHealthValue: -8
+  spoiledDuration: 10
+  rotFadeDuration: 1.2
+  spoiledTint: {r: 0.55, g: 0.68, b: 0.36, a: 1}
+  flySound: {fileID: 8300000, guid: 0f7444e7eeb63b74eb24abe2eb83eb74, type: 3}
+  flyVolume: 0.1
+  rageOnPickup: 0
+  biteTimeMultiplier: 1
   reelDifficulty: 1.1
   gravityScale: 2
   minAngularVelocity: -360
   maxAngularVelocity: 360
+  timeUntilGroundLayer: 4
   pickupRangeObject: {fileID: 277110292678728226}
+  bounceSounds: []
+  bounceVolume: 1
+  bounceSoundCooldown: 0.2
+  minBouncePitch: 0.8
+  maxBouncePitch: 1.2
   fishPile: {fileID: 0}
 --- !u!70 &3101576623259102180
 CapsuleCollider2D:

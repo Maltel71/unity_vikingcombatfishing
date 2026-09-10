@@ -41,21 +41,25 @@ public class AttackCollider : MonoBehaviour
         }
     }
 
-    public void ActivateAttack(float damage)
+    public int ActivateAttack(float damage)
     {
 
         hitBuffer.Clear();
         hitBuffer.AddRange(enemiesInRange);
+
+        int hits = 0;
 
         foreach (EnemyScript enemy in hitBuffer)
         {
             if (enemy != null)
             {
                 enemy.TakeDamage((int)damage);
+                hits++;
             }
         }
 
         hitBuffer.Clear();
+        return hits;
     }
 
     public void EnableCollider()

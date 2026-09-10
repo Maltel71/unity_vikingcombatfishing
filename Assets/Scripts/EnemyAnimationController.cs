@@ -6,10 +6,12 @@ public class EnemyAnimationController : MonoBehaviour
     private Animator animator;
     private EnemyScript enemyScript;
 
-    private const string WALK = "Gnome_Villager_Walk";
-    private const string ATTACK = "Gnome_Villager_Attack";
-    private const string DEATH = "Gnome_Villager_Death";
-    private const string DEATH_IDLE = "Gnome_Death_Idle";
+    [Header("State Names")]
+    [Tooltip("Must match the state names in this enemy's Animator Controller.")]
+    public string walkState = "Gnome_Villager_Walk";
+    public string attackState = "Gnome_Villager_Attack";
+    public string deathState = "Gnome_Villager_Death";
+    public string deathIdleState = "Gnome_Death_Idle";
 
     private string currentState;
     private bool isDead = false;
@@ -25,7 +27,7 @@ public class EnemyAnimationController : MonoBehaviour
 
         enemyScript = GetComponent<EnemyScript>();
 
-        ChangeAnimationState(WALK);
+        ChangeAnimationState(walkState);
     }
 
     void Update()
@@ -38,7 +40,7 @@ public class EnemyAnimationController : MonoBehaviour
             {
                 isDead = true;
                 isAttacking = false;
-                ChangeAnimationState(DEATH);
+                ChangeAnimationState(deathState);
                 StartCoroutine(HandleDeathAnimation());
             }
             return;
@@ -50,14 +52,14 @@ public class EnemyAnimationController : MonoBehaviour
             if (stateInfo.normalizedTime >= 1.0f)
             {
                 isAttacking = false;
-                ChangeAnimationState(WALK);
+                ChangeAnimationState(walkState);
             }
             return;
         }
 
-        if (currentState != WALK)
+        if (currentState != walkState)
         {
-            ChangeAnimationState(WALK);
+            ChangeAnimationState(walkState);
         }
     }
 
@@ -70,7 +72,7 @@ public class EnemyAnimationController : MonoBehaviour
             yield return null;
         }
 
-        ChangeAnimationState(DEATH_IDLE);
+        ChangeAnimationState(deathIdleState);
         enabled = false;
     }
 
@@ -87,7 +89,7 @@ public class EnemyAnimationController : MonoBehaviour
         if (!isDead && !isAttacking)
         {
             isAttacking = true;
-            ChangeAnimationState(ATTACK);
+            ChangeAnimationState(attackState);
         }
     }
 

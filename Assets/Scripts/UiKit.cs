@@ -237,4 +237,13 @@ public static class UiKit
         rt.anchoredPosition = new Vector2(x, y);
         rt.sizeDelta = new Vector2(width, height);
     }
+
+    public static void AnchorBottom(RectTransform rt, float x, float y, float width, float height)
+    {
+        rt.anchorMin = new Vector2(0.5f, 0f);
+        rt.anchorMax = new Vector2(0.5f, 0f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = new Vector2(x, y);
+        rt.sizeDelta = new Vector2(width, height);
+    }
 }

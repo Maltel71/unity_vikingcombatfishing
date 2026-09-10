@@ -44,6 +44,8 @@ public class PlayerScript : MonoBehaviour
 
     private FishingRod cachedFishingRod;
     private PlayerAnimationController cachedAnimController;
+    private RageMeter rage;
+    private bool danceBlocked = false;
 
     void Start()
     {
@@ -56,6 +58,7 @@ public class PlayerScript : MonoBehaviour
 
         cachedFishingRod = GetComponentInChildren<FishingRod>();
         cachedAnimController = GetComponent<PlayerAnimationController>();
+        rage = GetComponent<RageMeter>();
     }
 
     void Update()
@@ -65,6 +68,7 @@ public class PlayerScript : MonoBehaviour
 
         HandleMovement();
         HandleAttack();
+        HandleBerserk();
         HandleDance();
         PlayerInteract();
     }
@@ -126,7 +130,10 @@ public class PlayerScript : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
-        attackCollider.ActivateAttack(AttackPower);
+        int hits = attackCollider.ActivateAttack(AttackPower);
+
+        if (rage == null) rage = GetComponent<RageMeter>();
+        if (rage != null) rage.AddHits(hits);
 
         if (enemyHitSound != null && audioSource != null)
         {
@@ -138,12 +145,68 @@ public class PlayerScript : MonoBehaviour
         attackCollider.DisableCollider();
     }
 
+    void HandleBerserk()
+    {
+        if (rage == null) rage = GetComponent<RageMeter>();
+        if (rage == null || !rage.IsFull) return;
+        if (IsReeling()) return;
+
+        bool pressed = Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl);
+        if (!pressed) return;
+
+        if (!rage.Consume()) return;
+
+        danceBlocked = true;
+
+        if (isDancing)
+        {
+            isDancing = false;
+            if (cachedAnimController != null) cachedAnimController.StopDancing();
+        }
+
+        StartCoroutine(BerserkRoutine());
+    }
+
+    IEnumerator BerserkRoutine()
+    {
+        if (cachedAnimController != null)
+        {
+            cachedAnimController.PlayAttack();
+        }
+
+        if (swordSwooshSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(swordSwooshSound, attackSoundVolume);
+        }
+
+        nextAttackTime = Time.time + (1f / Mathf.Max(0.01f, AttackSpeed));
+
+        if (attackCollider == null) yield break;
+
+        attackCollider.EnableCollider();
+
+        yield return new WaitForSeconds(0.1f);
+
+        attackCollider.ActivateAttack(AttackPower * rage.damageMultiplier);
+
+        if (enemyHitSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(enemyHitSound, attackSoundVolume);
+        }
+
+        yield return new WaitForSeconds(Mathf.Max(0.05f, rage.swingDuration));
+
+        attackCollider.DisableCollider();
+    }
+
     void HandleDance()
     {
 
         bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
-        if (ctrlHeld)
+        if (!ctrlHeld) danceBlocked = false;
+
+        if (ctrlHeld && !danceBlocked)
         {
 
             if (IsReeling()) return;
@@ -180,6 +243,9 @@ public class PlayerScript : MonoBehaviour
         playerHealth -= damage;
 
         HealthPopup.Show(-lost);
+
+        if (rage == null) rage = GetComponent<RageMeter>();
+        if (rage != null) rage.LoseOnDamage();
 
         if (bloodParticle != null)
         {

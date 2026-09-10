@@ -136,6 +136,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlyingFish
   fishName: Old Boot
   healthValue: -5
+  rageOnPickup: 25
   scoreValue: -10
   biteTimeMultiplier: 0.6
   reelDifficulty: 0.6
