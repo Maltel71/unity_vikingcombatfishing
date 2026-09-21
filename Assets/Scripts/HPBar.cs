@@ -18,6 +18,12 @@ public class HPBar : MonoBehaviour
 
     void Update()
     {
+        if (PlayerScript.IsGameOver)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         if (player != null && fillImage != null)
         {
             fillImage.fillAmount = (float)player.playerHealth / (float)player.maxHealth;

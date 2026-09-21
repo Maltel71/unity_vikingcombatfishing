@@ -17,14 +17,32 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] public float AttackPower = 50f;
     [SerializeField] public bool isAlive = true;
 
+    public static bool IsGameOver { get; private set; }
+
     [Header("Sound Effects")]
     public AudioClip[] hurtSounds;
     [Range(0f, 1f)]
     public float hurtSoundVolume = 1f;
     public AudioClip swordSwooshSound;
+    [Tooltip("Impact sound. Only plays when the swing actually connects.")]
     public AudioClip enemyHitSound;
     [Range(0f, 1f)]
     public float attackSoundVolume = 1f;
+    [Tooltip("Random pitch range on the impact so repeated hits do not sound identical.")]
+    [Range(0.5f, 2f)]
+    public float minHitPitch = 0.92f;
+    [Range(0.5f, 2f)]
+    public float maxHitPitch = 1.08f;
+
+    [Header("Berserk Sound")]
+    [Tooltip("Pitch the normal swoosh is dropped to, so the berserk swing sounds heavier without a new clip.")]
+    [Range(0.3f, 1f)]
+    public float berserkPitch = 0.55f;
+    [Tooltip("Second layer played just after the first, slightly higher. 0 disables it.")]
+    [Range(0f, 1f)]
+    public float berserkLayerPitch = 0.8f;
+    [Tooltip("Delay between the two layers.")]
+    public float berserkLayerDelay = 0.06f;
     private AudioSource audioSource;
 
     [Header("Visual Effects")]
@@ -55,6 +73,8 @@ public class PlayerScript : MonoBehaviour
         {
             audioSource = gameObject.AddComponent<AudioSource>();
         }
+
+        IsGameOver = false;
 
         cachedFishingRod = GetComponentInChildren<FishingRod>();
         cachedAnimController = GetComponent<PlayerAnimationController>();
@@ -110,7 +130,7 @@ public class PlayerScript : MonoBehaviour
 
             if (swordSwooshSound != null && audioSource != null)
             {
-                audioSource.PlayOneShot(swordSwooshSound, attackSoundVolume);
+                PlayOnPlayer(swordSwooshSound, attackSoundVolume, 1f);
             }
 
             float safeAttackSpeed = Mathf.Max(0.01f, AttackSpeed);
@@ -135,10 +155,7 @@ public class PlayerScript : MonoBehaviour
         if (rage == null) rage = GetComponent<RageMeter>();
         if (rage != null) rage.AddHits(hits);
 
-        if (enemyHitSound != null && audioSource != null)
-        {
-            audioSource.PlayOneShot(enemyHitSound, attackSoundVolume);
-        }
+        PlayImpact(hits);
 
         yield return new WaitForSeconds(0.2f);
 
@@ -174,10 +191,7 @@ public class PlayerScript : MonoBehaviour
             cachedAnimController.PlayAttack();
         }
 
-        if (swordSwooshSound != null && audioSource != null)
-        {
-            audioSource.PlayOneShot(swordSwooshSound, attackSoundVolume);
-        }
+        StartCoroutine(BerserkRoar());
 
         nextAttackTime = Time.time + (1f / Mathf.Max(0.01f, AttackSpeed));
 
@@ -187,16 +201,66 @@ public class PlayerScript : MonoBehaviour
 
         yield return new WaitForSeconds(0.1f);
 
-        attackCollider.ActivateAttack(AttackPower * rage.damageMultiplier);
+        int hits = attackCollider.ActivateAttack(AttackPower * rage.damageMultiplier);
 
-        if (enemyHitSound != null && audioSource != null)
-        {
-            audioSource.PlayOneShot(enemyHitSound, attackSoundVolume);
-        }
+        PlayImpact(hits, berserkPitch);
 
         yield return new WaitForSeconds(Mathf.Max(0.05f, rage.swingDuration));
 
         attackCollider.DisableCollider();
+    }
+
+    void PlayImpact(int hits)
+    {
+        PlayImpact(hits, Random.Range(minHitPitch, maxHitPitch));
+    }
+
+    void PlayImpact(int hits, float pitch)
+    {
+        if (hits <= 0) return;
+        if (enemyHitSound == null || audioSource == null) return;
+
+        PlayOnPlayer(enemyHitSound, attackSoundVolume, pitch);
+    }
+
+    IEnumerator BerserkRoar()
+    {
+        if (swordSwooshSound == null || audioSource == null) yield break;
+
+        PlayDetached(swordSwooshSound, attackSoundVolume, berserkPitch);
+
+        if (berserkLayerPitch <= 0f) yield break;
+
+        yield return new WaitForSeconds(berserkLayerDelay);
+
+        PlayDetached(swordSwooshSound, attackSoundVolume * 0.7f, berserkLayerPitch);
+    }
+
+    void PlayOnPlayer(AudioClip clip, float volume, float pitch)
+    {
+        if (clip == null || audioSource == null) return;
+
+        audioSource.pitch = pitch;
+        audioSource.PlayOneShot(clip, volume);
+    }
+
+    void PlayDetached(AudioClip clip, float volume, float pitch)
+    {
+        if (clip == null) return;
+
+        float safePitch = Mathf.Max(0.05f, Mathf.Abs(pitch));
+
+        GameObject go = new GameObject("BerserkVoice");
+        go.transform.position = transform.position;
+
+        AudioSource source = go.AddComponent<AudioSource>();
+        source.clip = clip;
+        source.volume = Mathf.Clamp01(volume);
+        source.pitch = pitch;
+        source.spatialBlend = 0f;
+        source.Play();
+
+        Destroy(go, (clip.length / safePitch) + 0.2f);
     }
 
     void HandleDance()
@@ -255,7 +319,7 @@ public class PlayerScript : MonoBehaviour
         if (hurtSounds != null && hurtSounds.Length > 0 && audioSource != null)
         {
             int randomIndex = Random.Range(0, hurtSounds.Length);
-            audioSource.PlayOneShot(hurtSounds[randomIndex], hurtSoundVolume);
+            PlayOnPlayer(hurtSounds[randomIndex], hurtSoundVolume, 1f);
         }
 
         if (playerHealth <= 0)
@@ -303,6 +367,7 @@ public class PlayerScript : MonoBehaviour
     void Die()
     {
         isAlive = false;
+        IsGameOver = true;
         Debug.Log($"{playerName} has perished in battle.");
 
     }

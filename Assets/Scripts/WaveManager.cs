@@ -24,6 +24,11 @@ public class EndlessWaveManager : MonoBehaviour
 
     public BossOrder bossOrder = BossOrder.InOrder;
 
+    [Tooltip("Wait until every gnome from this wave is dead before announcing the next one.")]
+    public bool waitForWaveCleared = true;
+    [Tooltip("Safety valve if a gnome gets stuck out of reach. 0 waits forever.")]
+    public float maxWaveDuration = 90f;
+
     [Tooltip("Gnome kills required before the first boss.")]
     public int gnomeKillsPerBoss = 20;
     [Tooltip("Extra gnome kills required per boss already defeated.")]
@@ -152,9 +157,9 @@ public class EndlessWaveManager : MonoBehaviour
         if (combatMusic == CombatMusicMode.Off) return;
         if (MusicManager.Instance == null) return;
 
-        bool shouldPlayCombat = combatMusic == CombatMusicMode.BossOnly
+        bool shouldPlayCombat = !PlayerScript.IsGameOver && (combatMusic == CombatMusicMode.BossOnly
             ? bossEncounterActive
-            : LiveEnemies > 0;
+            : LiveEnemies > 0);
 
         if (shouldPlayCombat && !combatMusicPlaying)
         {
@@ -177,6 +182,7 @@ public class EndlessWaveManager : MonoBehaviour
 
         while (true)
         {
+            if (PlayerScript.IsGameOver) yield break;
 
             if (bossQueued && HasBosses)
             {
@@ -196,6 +202,21 @@ public class EndlessWaveManager : MonoBehaviour
 
             yield return StartCoroutine(SpawnRoutine(enemiesToSpawn));
 
+            if (waitForWaveCleared)
+            {
+                float waited = 0f;
+
+                while (LiveEnemies > 0)
+                {
+                    if (PlayerScript.IsGameOver) yield break;
+
+                    waited += Time.deltaTime;
+                    if (maxWaveDuration > 0f && waited >= maxWaveDuration) break;
+
+                    yield return null;
+                }
+            }
+
             yield return new WaitForSeconds(timeBetweenWaves);
 
             currentWave++;
@@ -206,6 +227,7 @@ public class EndlessWaveManager : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
+            if (PlayerScript.IsGameOver) yield break;
 
             if (bossQueued && HasBosses && bossComesAlone)
             {

@@ -75,7 +75,7 @@ public class BossHealthBar : MonoBehaviour
         }
 
         EnemyScript boss = waves.ActiveBoss;
-        bool visible = boss != null && boss.health > 0;
+        bool visible = !PlayerScript.IsGameOver && boss != null && boss.health > 0;
 
         if (group != null)
         {
@@ -94,7 +94,7 @@ public class BossHealthBar : MonoBehaviour
 
         if (fillImage != null)
         {
-            fillImage.fillAmount = shownFill;
+            ApplyFill(shownFill);
             fillImage.color = ratio <= criticalThreshold ? criticalColor : healthyColor;
         }
 
@@ -106,6 +106,25 @@ public class BossHealthBar : MonoBehaviour
         {
             healthLabel.text = "";
         }
+    }
+
+    void ApplyFill(float value)
+    {
+        if (fillImage == null) return;
+
+        value = Mathf.Clamp01(value);
+
+        if (fillImage.sprite != null && fillImage.type == Image.Type.Filled)
+        {
+            fillImage.fillAmount = value;
+            return;
+        }
+
+        RectTransform rt = fillImage.rectTransform;
+        rt.anchorMin = new Vector2(0f, 0f);
+        rt.anchorMax = new Vector2(value, 1f);
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
     }
 
     void BuildUI()

@@ -16,6 +16,10 @@ public class EnemyAnimationController : MonoBehaviour
     private string currentState;
     private bool isDead = false;
     private bool isAttacking = false;
+    private float attackStartedAt = 0f;
+
+    [Tooltip("Safety valve so a stuck attack cannot freeze the enemy forever.")]
+    public float attackTimeout = 4f;
 
     void Start()
     {
@@ -34,6 +38,12 @@ public class EnemyAnimationController : MonoBehaviour
     {
         if (animator == null || enemyScript == null) return;
 
+        if (PlayerScript.IsGameOver)
+        {
+            animator.speed = 0f;
+            return;
+        }
+
         if (enemyScript.health <= 0)
         {
             if (!isDead)
@@ -49,7 +59,11 @@ public class EnemyAnimationController : MonoBehaviour
         if (isAttacking)
         {
             AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
-            if (stateInfo.normalizedTime >= 1.0f)
+            bool onAttackClip = stateInfo.IsName(attackState);
+            bool finished = onAttackClip && stateInfo.normalizedTime >= 1f;
+            bool timedOut = Time.time - attackStartedAt > attackTimeout;
+
+            if (finished || timedOut)
             {
                 isAttacking = false;
                 ChangeAnimationState(walkState);
@@ -86,11 +100,11 @@ public class EnemyAnimationController : MonoBehaviour
 
     public void PlayAttack()
     {
-        if (!isDead && !isAttacking)
-        {
-            isAttacking = true;
-            ChangeAnimationState(attackState);
-        }
+        if (isDead || isAttacking) return;
+
+        isAttacking = true;
+        attackStartedAt = Time.time;
+        ChangeAnimationState(attackState);
     }
 
     public void OnAttackHit()

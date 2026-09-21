@@ -40,6 +40,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &202960110834274877
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -85,6 +86,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 39208882a5a166341ad6a56dc998fc36, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -94,7 +96,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &3094586317560644480
 Animator:
@@ -134,12 +135,23 @@ MonoBehaviour:
   health: 100
   gnomeName: 
   attackSpeed: 1
-  attackRange: 2.9
+  attackRange: 2.4
   minMovementSpeed: 0.3
   maxMovementSpeed: 1
   minSizeMultiplier: 0.8
   maxSizeMultiplier: 1.2
   manager: {fileID: 0}
+  isElite: 0
+  eliteHealthMultiplier: 1
+  eliteDamageMultiplier: 1
+  eliteSizeMultiplier: 1.6
+  eliteSpeedMultiplier: 1.5
+  eliteAttackSpeedMultiplier: 1
+  eliteTint: {r: 1, g: 1, b: 1, a: 1}
+  logCombat: 0
+  vanishOnPlayerDeath: 1
+  vanishDelay: 1
+  vanishFadeDuration: 1
   hurtSounds:
   - {fileID: 8300000, guid: 77ffd37e8398a9b4a96180e56da9d6cc, type: 3}
   - {fileID: 8300000, guid: 5a32c4bc5dca51741a0cf93979a87c7a, type: 3}
@@ -232,6 +244,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4d4e13166a777f4c93dc2ff78d6936b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationController
+  walkState: Gnome_Villager_Walk
+  attackState: Gnome_Villager_Attack
+  deathState: Gnome_Villager_Death
+  deathIdleState: Gnome_Death_Idle
+  attackTimeout: 4
 --- !u!1001 &2861669358622059118
 PrefabInstance:
   m_ObjectHideFlags: 0

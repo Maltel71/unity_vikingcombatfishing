@@ -37,6 +37,18 @@ public class EnemyScript : MonoBehaviour
     [HideInInspector] public float eliteAttackSpeedMultiplier = 1f;
     [HideInInspector] public Color eliteTint = Color.white;
 
+    [Header("Debug")]
+    [Tooltip("Print distance and attack state to the console once a second.")]
+    public bool logCombat = false;
+    private float nextLogTime = 0f;
+
+    [Header("When Ragnar Dies")]
+    [Tooltip("Fade away once the player is dead instead of standing frozen.")]
+    public bool vanishOnPlayerDeath = true;
+    [Tooltip("Seconds to stand still before fading out.")]
+    public float vanishDelay = 1f;
+    public float vanishFadeDuration = 1f;
+
     [Header("Sound Effects")]
     public AudioClip[] hurtSounds;
     [Range(0f, 1f)]
@@ -55,6 +67,7 @@ public class EnemyScript : MonoBehaviour
     private Transform playerTransform;
     private PlayerScript playerScript;
     private bool isDying = false;
+    private bool stoodDown = false;
     private EnemyAnimationController animController;
 
     void Start()
@@ -114,6 +127,11 @@ public class EnemyScript : MonoBehaviour
 
     void Update()
     {
+        if (PlayerScript.IsGameOver)
+        {
+            StandDown();
+            return;
+        }
 
         if (health <= 0) return;
 
@@ -122,7 +140,18 @@ public class EnemyScript : MonoBehaviour
             return;
         }
 
-        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+        float distanceToPlayer = HorizontalDistanceToPlayer();
+
+        if (logCombat && Time.time >= nextLogTime)
+        {
+            nextLogTime = Time.time + 1f;
+            Debug.Log(name + "  dist=" + distanceToPlayer.ToString("F2")
+                + "  range=" + attackRange
+                + "  inRange=" + (distanceToPlayer <= attackRange)
+                + "  cooldownReady=" + (Time.time >= nextAttackTime)
+                + "  playerScript=" + (playerScript != null)
+                + "  animController=" + (animController != null));
+        }
 
         if (distanceToPlayer <= attackRange && Time.time >= nextAttackTime)
         {
@@ -145,6 +174,48 @@ public class EnemyScript : MonoBehaviour
             PlayRandomIdleSound();
             nextIdleSoundTime = Time.time + Random.Range(minIdleSoundTime, maxIdleSoundTime);
         }
+    }
+
+    void StandDown()
+    {
+        if (stoodDown) return;
+        stoodDown = true;
+
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.bodyType = RigidbodyType2D.Kinematic;
+        }
+
+        if (vanishOnPlayerDeath && !isDying)
+        {
+            StartCoroutine(VanishAfterDelay());
+        }
+    }
+
+    IEnumerator VanishAfterDelay()
+    {
+        yield return new WaitForSeconds(vanishDelay);
+
+        SpriteRenderer sprite = GetComponent<SpriteRenderer>();
+        float elapsed = 0f;
+        Color start = sprite != null ? sprite.color : Color.white;
+
+        while (elapsed < vanishFadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = vanishFadeDuration > 0f ? elapsed / vanishFadeDuration : 1f;
+
+            if (sprite != null)
+            {
+                sprite.color = new Color(start.r, start.g, start.b, start.a * (1f - t));
+            }
+
+            yield return null;
+        }
+
+        Destroy(gameObject);
     }
 
     public void TakeDamage(int amount)
@@ -239,6 +310,8 @@ public class EnemyScript : MonoBehaviour
 
     void Attack(PlayerScript player)
     {
+        if (logCombat) Debug.Log(name + "  ATTACK called, via animator = " + (animController != null));
+
         if (animController != null)
         {
 
@@ -251,11 +324,20 @@ public class EnemyScript : MonoBehaviour
         }
     }
 
+    float HorizontalDistanceToPlayer()
+    {
+        if (playerTransform == null) return float.MaxValue;
+
+        return Mathf.Abs(playerTransform.position.x - transform.position.x);
+    }
+
     public void DealDamage()
     {
+        if (logCombat) Debug.Log(name + "  DealDamage fired, dist=" + HorizontalDistanceToPlayer().ToString("F2"));
+
         if (playerTransform == null) return;
 
-        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+        float distanceToPlayer = HorizontalDistanceToPlayer();
 
         if (distanceToPlayer <= attackRange)
         {

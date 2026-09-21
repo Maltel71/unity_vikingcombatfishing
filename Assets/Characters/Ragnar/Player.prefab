@@ -35,6 +35,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4315625745236904207
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -80,6 +81,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -89,7 +91,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 0
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!95 &7478526658641268584
 Animator:
@@ -205,6 +206,7 @@ GameObject:
   - component: {fileID: 7538681369405482086}
   - component: {fileID: 4456928894806691159}
   - component: {fileID: 5329019485393523960}
+  - component: {fileID: 4447144020635458096}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -232,6 +234,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7983686472564118329
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -277,6 +280,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: f83511c6fe4106841bb61fa456bd9893, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -286,7 +290,6 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!114 &2903824015694416269
 MonoBehaviour:
@@ -303,6 +306,9 @@ MonoBehaviour:
   playerHealth: 100
   maxHealth: 100
   playerScore: 0
+  bloodMoney: 0
+  gnomesKilled: 0
+  bossesKilled: 0
   playerSpeed: 5
   playerName: Ragnar
   AttackSpeed: 1.5
@@ -315,10 +321,14 @@ MonoBehaviour:
   swordSwooshSound: {fileID: 8300000, guid: 27aa241cfdb6f3c45861d0466068a9f1, type: 3}
   enemyHitSound: {fileID: 8300000, guid: e36ed0df205f53144812148e9e2c36b4, type: 3}
   attackSoundVolume: 0.7
+  minHitPitch: 0.92
+  maxHitPitch: 1.08
+  berserkPitch: 0.55
+  berserkLayerPitch: 0.8
+  berserkLayerDelay: 0.06
   bloodParticle: {fileID: 7551302141640583522}
   danceAnimationName: danceanimragnar
-  attackRange: 1.2
-  attackOffset: 1
+  attackCollider: {fileID: 0}
 --- !u!114 &7538681369405482086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -395,6 +405,37 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
+--- !u!114 &4447144020635458096
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7450888661970128626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f650b73aa5655140837418f169e6834, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RageBar
+  barRoot: {fileID: 0}
+  fillImage: {fileID: 0}
+  readyLabel: {fileID: 0}
+  placeAbove: 1
+  gapInBarHeights: 1.6
+  heightRatio: 0.75
+  keepUpright: 1
+  showReadyText: 1
+  readyText: BERSERK
+  readyTextHeight: 1.3
+  readyGapInBarHeights: 1.4
+  trackColor: {r: 0.086, g: 0.071, b: 0.055, a: 0.85}
+  buildingColor: {r: 0.404, g: 0.161, b: 0.541, a: 1}
+  midColor: {r: 0.729, g: 0.259, b: 0.514, a: 1}
+  readyColor: {r: 0.949, g: 0.729, b: 0.263, a: 1}
+  fillSpeed: 8
+  fadeSpeed: 6
+  pulseSpeed: 2.4
+  hideWhenEmpty: 0
 --- !u!1001 &2095279859758874360
 PrefabInstance:
   m_ObjectHideFlags: 0
