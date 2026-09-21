@@ -37,6 +37,14 @@ public class EnemyScript : MonoBehaviour
     [HideInInspector] public float eliteAttackSpeedMultiplier = 1f;
     [HideInInspector] public Color eliteTint = Color.white;
 
+    [Header("Auto Setup")]
+    [Tooltip("Work out Attack Range from the collider once the boss size multiplier has been applied.")]
+    public bool autoAttackRange = true;
+    [Tooltip("How far past its own body the enemy can reach. Covers Ragnar's width plus a little slack.")]
+    public float reachPadding = 1f;
+    [Tooltip("Drop onto the ground at spawn so a tall boss never starts buried or floating.")]
+    public bool snapToGroundOnSpawn = true;
+
     [Header("Debug")]
     [Tooltip("Print distance and attack state to the console once a second.")]
     public bool logCombat = false;
@@ -96,7 +104,44 @@ public class EnemyScript : MonoBehaviour
 
         ApplyVariations();
 
+        if (snapToGroundOnSpawn) SnapToGround();
+        if (autoAttackRange) FitAttackRange();
+
         MaxHealth = Mathf.Max(1, health);
+    }
+
+    void FitAttackRange()
+    {
+        Collider2D body = GetComponent<Collider2D>();
+        if (body == null) return;
+
+        attackRange = body.bounds.extents.x + reachPadding;
+
+        if (logCombat)
+        {
+            Debug.Log(name + "  auto attack range = " + attackRange.ToString("F2")
+                + "  (half width " + body.bounds.extents.x.ToString("F2") + ")");
+        }
+    }
+
+    void SnapToGround()
+    {
+        Collider2D body = GetComponent<Collider2D>();
+        if (body == null) return;
+
+        Vector2 origin = new Vector2(transform.position.x, transform.position.y + 5f);
+        RaycastHit2D[] hits = Physics2D.RaycastAll(origin, Vector2.down, 40f);
+
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider == null) continue;
+            if (hit.collider.gameObject == gameObject) continue;
+            if (!hit.collider.CompareTag("Ground")) continue;
+
+            float lift = hit.point.y - body.bounds.min.y;
+            transform.position += new Vector3(0f, lift, 0f);
+            return;
+        }
     }
 
     void ApplyVariations()
@@ -331,8 +376,12 @@ public class EnemyScript : MonoBehaviour
         return Mathf.Abs(playerTransform.position.x - transform.position.x);
     }
 
+    public bool DamageEventFired { get; private set; }
+
     public void DealDamage()
     {
+        DamageEventFired = true;
+
         if (logCombat) Debug.Log(name + "  DealDamage fired, dist=" + HorizontalDistanceToPlayer().ToString("F2"));
 
         if (playerTransform == null) return;

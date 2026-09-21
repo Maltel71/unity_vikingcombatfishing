@@ -135,7 +135,7 @@ MonoBehaviour:
   health: 100
   gnomeName: 
   attackSpeed: 1
-  attackRange: 2.4
+  attackRange: 2.3
   minMovementSpeed: 0.3
   maxMovementSpeed: 1
   minSizeMultiplier: 0.8

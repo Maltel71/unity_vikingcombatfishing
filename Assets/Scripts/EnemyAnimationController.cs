@@ -21,6 +21,9 @@ public class EnemyAnimationController : MonoBehaviour
     [Tooltip("Safety valve so a stuck attack cannot freeze the enemy forever.")]
     public float attackTimeout = 4f;
 
+    private int attacksFinished = 0;
+    private bool warnedAboutEvent = false;
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -66,6 +69,8 @@ public class EnemyAnimationController : MonoBehaviour
             if (finished || timedOut)
             {
                 isAttacking = false;
+                attacksFinished++;
+                WarnIfEventMissing();
                 ChangeAnimationState(walkState);
             }
             return;
@@ -96,6 +101,17 @@ public class EnemyAnimationController : MonoBehaviour
 
         animator.Play(newState, 0, 0f);
         currentState = newState;
+    }
+
+    void WarnIfEventMissing()
+    {
+        if (warnedAboutEvent) return;
+        if (attacksFinished < 2) return;
+        if (enemyScript == null || enemyScript.DamageEventFired) return;
+
+        warnedAboutEvent = true;
+        Debug.LogWarning(name + " has swung twice without dealing damage. The clip \""
+            + attackState + "\" is missing its DealDamage animation event.");
     }
 
     public void PlayAttack()
