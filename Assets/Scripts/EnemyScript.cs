@@ -29,6 +29,8 @@ public class EnemyScript : MonoBehaviour
 
     [HideInInspector] public bool isElite = false;
 
+    [HideInInspector] public bool externalBehaviour = false;
+
     public int MaxHealth { get; private set; }
     [HideInInspector] public float eliteHealthMultiplier = 1f;
     [HideInInspector] public float eliteDamageMultiplier = 1f;
@@ -110,9 +112,19 @@ public class EnemyScript : MonoBehaviour
         MaxHealth = Mathf.Max(1, health);
     }
 
+    Collider2D BodyCollider()
+    {
+        foreach (Collider2D col in GetComponentsInChildren<Collider2D>())
+        {
+            if (col != null && col.enabled) return col;
+        }
+
+        return null;
+    }
+
     void FitAttackRange()
     {
-        Collider2D body = GetComponent<Collider2D>();
+        Collider2D body = BodyCollider();
         if (body == null) return;
 
         attackRange = body.bounds.extents.x + reachPadding;
@@ -126,7 +138,7 @@ public class EnemyScript : MonoBehaviour
 
     void SnapToGround()
     {
-        Collider2D body = GetComponent<Collider2D>();
+        Collider2D body = BodyCollider();
         if (body == null) return;
 
         Vector2 origin = new Vector2(transform.position.x, transform.position.y + 5f);
@@ -179,6 +191,7 @@ public class EnemyScript : MonoBehaviour
         }
 
         if (health <= 0) return;
+        if (externalBehaviour) return;
 
         if (playerTransform == null)
         {
@@ -284,7 +297,10 @@ public class EnemyScript : MonoBehaviour
         if (health <= 0)
         {
             Die();
+            return;
         }
+
+        if (animController != null) animController.PlayHurt();
     }
 
     void Die()
@@ -300,7 +316,7 @@ public class EnemyScript : MonoBehaviour
             rb.bodyType = RigidbodyType2D.Kinematic;
         }
 
-        Collider2D[] colliders = GetComponents<Collider2D>();
+        Collider2D[] colliders = GetComponentsInChildren<Collider2D>();
         foreach (Collider2D col in colliders)
         {
             col.enabled = false;
@@ -380,6 +396,18 @@ public class EnemyScript : MonoBehaviour
 
     public void DealDamage()
     {
+        if (animController != null)
+        {
+            if (animController.SuppressDamage) return;
+            DealDamageScaled(animController.CurrentAttackMultiplier);
+            return;
+        }
+
+        DealDamageScaled(1f);
+    }
+
+    public void DealDamageScaled(float damageMultiplier)
+    {
         DamageEventFired = true;
 
         if (logCombat) Debug.Log(name + "  DealDamage fired, dist=" + HorizontalDistanceToPlayer().ToString("F2"));
@@ -392,7 +420,7 @@ public class EnemyScript : MonoBehaviour
         {
             if (playerScript != null)
             {
-                playerScript.TakeDamage(damage);
+                playerScript.TakeDamage(Mathf.Max(1, Mathf.RoundToInt(damage * damageMultiplier)));
             }
         }
     }

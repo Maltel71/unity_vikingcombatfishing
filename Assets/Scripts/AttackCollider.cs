@@ -19,25 +19,21 @@ public class AttackCollider : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Enemy"))
+        EnemyScript enemy = other.GetComponentInParent<EnemyScript>();
+
+        if (enemy != null && !enemiesInRange.Contains(enemy))
         {
-            EnemyScript enemy = other.GetComponent<EnemyScript>();
-            if (enemy != null && !enemiesInRange.Contains(enemy))
-            {
-                enemiesInRange.Add(enemy);
-            }
+            enemiesInRange.Add(enemy);
         }
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Enemy"))
+        EnemyScript enemy = other.GetComponentInParent<EnemyScript>();
+
+        if (enemy != null && enemiesInRange.Contains(enemy))
         {
-            EnemyScript enemy = other.GetComponent<EnemyScript>();
-            if (enemy != null && enemiesInRange.Contains(enemy))
-            {
-                enemiesInRange.Remove(enemy);
-            }
+            enemiesInRange.Remove(enemy);
         }
     }
 

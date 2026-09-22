@@ -21,6 +21,13 @@ public class BossType
     [Tooltip("Multiplier on attacks per second. 2 swings twice as often, 0.5 half as often.")]
     public float attackSpeedMultiplier = 1f;
 
+    [Tooltip("Send rushing gnomes at Ragnar while this boss is alive. Set the prefab and timing on the wave manager.")]
+    public bool spawnsRushers = false;
+
+    [Header("Arrival")]
+    [Tooltip("Where this boss appears. Leave empty to use the Boss Spawn Points list on the wave manager.")]
+    public Transform spawnPoint;
+
     [Header("Look")]
     [Tooltip("Tint laid over the sprite so bosses sharing one model can still be told apart.")]
     public Color tint = Color.white;

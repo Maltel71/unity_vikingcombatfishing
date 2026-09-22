@@ -41,6 +41,15 @@ public class EndlessWaveManager : MonoBehaviour
     [Tooltip("Optional dedicated boss spawn points. Empty falls back to the normal spawnPoints.")]
     public Transform[] bossSpawnPoints;
 
+    [Header("Rushers")]
+    [Tooltip("Gnome on speed. Charges straight at Ragnar and goes down in one hit.")]
+    public GameObject rusherPrefab;
+    [Tooltip("Which bosses use them is set per boss, with Spawns Rushers in the Bosses list.")]
+    public float minRusherGap = 4f;
+    public float maxRusherGap = 9f;
+    [Tooltip("Optional dedicated spawn points. Empty falls back to the normal spawnPoints.")]
+    public Transform[] rusherSpawnPoints;
+
     [Header("Boss Scaling")]
     [Tooltip("0.3 = +30% HP per level. Level 1 is unchanged, level 2 gets +30%, level 3 +60% and so on.")]
     public float healthScalePerLevel = 0.3f;
@@ -52,6 +61,14 @@ public class EndlessWaveManager : MonoBehaviour
     public int maxBossLevel = 0;
     [Tooltip("Print the level as a roman numeral after the name, for example MUSCLE III.")]
     public bool showBossLevel = true;
+
+    [Header("Testing")]
+    [Tooltip("Skip straight into a boss fight when you press Play, so you can try a boss without clearing waves first.")]
+    public bool startWithBoss = false;
+    [Tooltip("Which boss in the list above. 0 is the first one.")]
+    public int testBossIndex = 0;
+    [Tooltip("Press this while playing to throw the same boss in again. None turns it off.")]
+    public KeyCode spawnBossKey = KeyCode.F9;
 
     [Header("Blood Money")]
     [Tooltip("Blood money per regular gnome killed.")]
@@ -88,6 +105,7 @@ public class EndlessWaveManager : MonoBehaviour
     private int killsSinceLastBoss = 0;
     private int nextBossIndex = 0;
     private bool bossQueued = false;
+    private int forcedBossIndex = -1;
     private bool bossAlive = false;
     private bool bossEncounterActive = false;
     private string currentBossName = "";
@@ -110,6 +128,13 @@ public class EndlessWaveManager : MonoBehaviour
     void Update()
     {
         UpdateCombatMusic();
+
+        if (spawnBossKey != KeyCode.None && Input.GetKeyDown(spawnBossKey) && !bossEncounterActive)
+        {
+            forcedBossIndex = testBossIndex;
+            bossQueued = true;
+            Debug.Log("Boss test: queued boss index " + testBossIndex);
+        }
     }
 
     void BuildBossList()
@@ -141,6 +166,13 @@ public class EndlessWaveManager : MonoBehaviour
     BossType PickNextBoss()
     {
         if (activeBosses.Count == 0) return null;
+
+        if (forcedBossIndex >= 0)
+        {
+            BossType forced = activeBosses[Mathf.Clamp(forcedBossIndex, 0, activeBosses.Count - 1)];
+            forcedBossIndex = -1;
+            return forced;
+        }
 
         if (bossOrder == BossOrder.Random)
         {
@@ -179,6 +211,12 @@ public class EndlessWaveManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         currentWave = 1;
+
+        if (startWithBoss && HasBosses)
+        {
+            forcedBossIndex = testBossIndex;
+            bossQueued = true;
+        }
 
         while (true)
         {
@@ -279,6 +317,12 @@ public class EndlessWaveManager : MonoBehaviour
 
         SpawnBoss(boss);
 
+        Coroutine rushers = null;
+        if (boss.spawnsRushers && rusherPrefab != null)
+        {
+            rushers = StartCoroutine(RusherLoop());
+        }
+
         float elapsed = 0f;
         while (bossAlive)
         {
@@ -292,10 +336,41 @@ public class EndlessWaveManager : MonoBehaviour
             yield return null;
         }
 
+        if (rushers != null) StopCoroutine(rushers);
+
         bossEncounterActive = false;
 
         yield return new WaitForSeconds(timeBetweenWaves);
         currentWave++;
+    }
+
+    IEnumerator RusherLoop()
+    {
+        while (bossAlive)
+        {
+            yield return new WaitForSeconds(Random.Range(minRusherGap, maxRusherGap));
+
+            if (!bossAlive) yield break;
+            if (PlayerScript.IsGameOver) yield break;
+
+            SpawnRusher();
+        }
+    }
+
+    void SpawnRusher()
+    {
+        if (rusherPrefab == null) return;
+
+        Transform[] points = (rusherSpawnPoints != null && rusherSpawnPoints.Length > 0)
+            ? rusherSpawnPoints
+            : spawnPoints;
+
+        if (points == null || points.Length == 0) return;
+
+        Transform sp = points[Random.Range(0, points.Length)];
+        if (sp == null) return;
+
+        SpawnEnemy(rusherPrefab, sp, null);
     }
 
     string BuildAnnouncement(BossType boss)
@@ -315,13 +390,19 @@ public class EndlessWaveManager : MonoBehaviour
 
     void SpawnBoss(BossType boss)
     {
-        Transform[] points = (bossSpawnPoints != null && bossSpawnPoints.Length > 0)
-            ? bossSpawnPoints
-            : spawnPoints;
+        Transform sp = boss.spawnPoint;
 
-        if (points == null || points.Length == 0) return;
+        if (sp == null)
+        {
+            Transform[] points = (bossSpawnPoints != null && bossSpawnPoints.Length > 0)
+                ? bossSpawnPoints
+                : spawnPoints;
 
-        Transform sp = points[Random.Range(0, points.Length)];
+            if (points == null || points.Length == 0) return;
+
+            sp = points[Random.Range(0, points.Length)];
+        }
+
         if (sp == null) return;
 
         bossAlive = true;
