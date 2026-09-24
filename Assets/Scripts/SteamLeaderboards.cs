@@ -188,7 +188,7 @@ public class SteamLeaderboards : MonoBehaviour
 
         if (result.m_bScoreChanged != 0)
         {
-            Debug.Log("Steam: nytt personbasta, plats " + result.m_nGlobalRankNew + ".");
+            Debug.Log("Steam: new personal best, rank " + result.m_nGlobalRankNew + ".");
         }
     }
 

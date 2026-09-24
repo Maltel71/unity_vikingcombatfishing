@@ -379,7 +379,6 @@ public class PlayerScript : MonoBehaviour
     {
         isAlive = false;
         IsGameOver = true;
-        Debug.Log($"{playerName} has perished in battle.");
 
     }
 

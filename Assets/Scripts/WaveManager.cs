@@ -62,13 +62,15 @@ public class EndlessWaveManager : MonoBehaviour
     [Tooltip("Print the level as a roman numeral after the name, for example MUSCLE III.")]
     public bool showBossLevel = true;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
     [Header("Testing")]
-    [Tooltip("Skip straight into a boss fight when you press Play, so you can try a boss without clearing waves first.")]
+    [Tooltip("Skip straight into a boss fight when you press Play, so you can try a boss without clearing waves first. Editor and development builds only.")]
     public bool startWithBoss = false;
     [Tooltip("Which boss in the list above. 0 is the first one.")]
     public int testBossIndex = 0;
     [Tooltip("Press this while playing to throw the same boss in again. None turns it off.")]
     public KeyCode spawnBossKey = KeyCode.F9;
+#endif
 
     [Header("Blood Money")]
     [Tooltip("Blood money per regular gnome killed.")]
@@ -131,12 +133,13 @@ public class EndlessWaveManager : MonoBehaviour
     {
         UpdateCombatMusic();
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (spawnBossKey != KeyCode.None && Input.GetKeyDown(spawnBossKey) && !bossEncounterActive)
         {
             forcedBossIndex = testBossIndex;
             bossQueued = true;
-            Debug.Log("Boss test: queued boss index " + testBossIndex);
         }
+#endif
     }
 
     void BuildBossList()
@@ -214,11 +217,13 @@ public class EndlessWaveManager : MonoBehaviour
 
         currentWave = 1;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (startWithBoss && HasBosses)
         {
             forcedBossIndex = testBossIndex;
             bossQueued = true;
         }
+#endif
 
         while (true)
         {

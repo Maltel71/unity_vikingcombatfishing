@@ -46,7 +46,7 @@ public static class SteamAchievements
         if (SteamUserStats.SetAchievement(id))
         {
             SteamUserStats.StoreStats();
-            Debug.Log("Achievement upplast: " + id);
+            Debug.Log("Achievement unlocked: " + id);
         }
     }
 
