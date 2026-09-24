@@ -136,8 +136,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlyingFish
   fishName: Old Boot
   healthValue: -5
-  rageOnPickup: 25
   scoreValue: -10
+  freshDuration: 12
+  spoiledHealthValue: -8
+  spoiledDuration: 10
+  rotFadeDuration: 1.2
+  spoiledTint: {r: 0.55, g: 0.68, b: 0.36, a: 1}
+  flySound: {fileID: 0}
+  flyVolume: 0
+  minFlyInterval: 3
+  maxFlyInterval: 7
+  minFlyPitch: 0.9
+  maxFlyPitch: 1.2
+  sharedFlyGap: 1.5
+  rageOnPickup: 25
   biteTimeMultiplier: 0.6
   reelDifficulty: 0.6
   gravityScale: 2

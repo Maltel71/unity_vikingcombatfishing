@@ -5098,7 +5098,7 @@ MonoBehaviour:
   health: 400
   gnomeName: "N\xE4cken"
   attackSpeed: 0.2
-  attackRange: 6
+  attackRange: 4.5
   minMovementSpeed: 0
   maxMovementSpeed: 0
   minSizeMultiplier: 1
@@ -5112,9 +5112,17 @@ MonoBehaviour:
   eliteSpeedMultiplier: 1.5
   eliteAttackSpeedMultiplier: 1
   eliteTint: {r: 1, g: 1, b: 1, a: 1}
-  autoAttackRange: 1
+  eliteReachBonus: 0
+  autoAttackRange: 0
   reachPadding: 2.5
   snapToGroundOnSpawn: 0
+  swingWhenOutOfReach: 1
+  knockbackDistance: 0.6
+  knockbackDuration: 0.15
+  knockbackOnlyBetweenAttacks: 0
+  knockbackMinDamage: 0
+  knockbackCooldown: 0.5
+  knockbackReturn: 1
   logCombat: 0
   vanishOnPlayerDeath: 1
   vanishDelay: 1
@@ -5186,6 +5194,7 @@ MonoBehaviour:
   finisherChance: 0.6
   finisherCooldown: 10
   finisherDamageMultiplier: 2
+  logAnimation: 0
   attackTimeout: 4
   returnState: "N\xE4cken_Sucess"
 --- !u!1 &6911103301763678784

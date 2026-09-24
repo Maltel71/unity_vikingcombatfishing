@@ -435,6 +435,7 @@ public class EndlessWaveManager : MonoBehaviour
                 enemy.eliteSpeedMultiplier = boss.speedMultiplier * (1f + speedScalePerLevel * steps);
                 enemy.eliteAttackSpeedMultiplier = boss.attackSpeedMultiplier * (1f + attackSpeedScalePerLevel * steps);
                 enemy.eliteTint = boss.tint;
+                enemy.eliteReachBonus = boss.extraReach;
             }
         }
 

@@ -54,6 +54,10 @@ public class FishingRod : MonoBehaviour
 
     [Header("Sound Effects")]
     public AudioClip biteSound;
+    [Header("Boss Fights")]
+    [Tooltip("No casting while a boss is alive. The rod stays quiet instead of playing the cast sound into nothing.")]
+    public bool blockDuringBoss = true;
+
     public AudioClip castSound;
     public AudioClip catchSound;
     private AudioSource audioSource;
@@ -120,6 +124,16 @@ public class FishingRod : MonoBehaviour
             {
                 CancelFishing();
             }
+            return;
+        }
+
+        if (BossOnTheLoose())
+        {
+            if (biteCoroutine != null || isReelingIn || hasBite)
+            {
+                CancelFishing();
+            }
+
             return;
         }
 
@@ -383,6 +397,18 @@ public class FishingRod : MonoBehaviour
     void LostFish()
     {
         ResetFishing();
+    }
+
+    private EndlessWaveManager waves;
+
+    bool BossOnTheLoose()
+    {
+        if (!blockDuringBoss) return false;
+
+        if (waves == null) waves = FindFirstObjectByType<EndlessWaveManager>();
+        if (waves == null) return false;
+
+        return waves.ActiveBoss != null && waves.ActiveBoss.health > 0;
     }
 
     void CancelFishing()

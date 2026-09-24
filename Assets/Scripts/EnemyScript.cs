@@ -38,6 +38,7 @@ public class EnemyScript : MonoBehaviour
     [HideInInspector] public float eliteSpeedMultiplier = 1.5f;
     [HideInInspector] public float eliteAttackSpeedMultiplier = 1f;
     [HideInInspector] public Color eliteTint = Color.white;
+    [HideInInspector] public float eliteReachBonus = 0f;
 
     [Header("Auto Setup")]
     [Tooltip("Work out Attack Range from the collider once the boss size multiplier has been applied.")]
@@ -46,6 +47,22 @@ public class EnemyScript : MonoBehaviour
     public float reachPadding = 1f;
     [Tooltip("Drop onto the ground at spawn so a tall boss never starts buried or floating.")]
     public bool snapToGroundOnSpawn = true;
+
+    [Tooltip("Keep swinging on the cooldown even when Ragnar is out of reach. For an enemy that cannot walk, so it still looms instead of waiting to be approached.")]
+    public bool swingWhenOutOfReach = false;
+
+    [Header("Knockback")]
+    [Tooltip("World units this enemy is shoved back when hit. 0 means it stands its ground.")]
+    public float knockbackDistance = 0f;
+    public float knockbackDuration = 0.15f;
+    [Tooltip("Ignore knockback while the enemy is mid swing, so a hit cannot cancel its attack.")]
+    public bool knockbackOnlyBetweenAttacks = false;
+    [Tooltip("Only hits of at least this much damage shove the enemy. Set it above a normal swing so only heavy blows land a stagger.")]
+    public int knockbackMinDamage = 0;
+    [Tooltip("Shortest time between two shoves, so fast hits cannot push an enemy across the map.")]
+    public float knockbackCooldown = 0.5f;
+    [Tooltip("Slide back to where it stood once the shove is done. Keeps the punch without letting a slow enemy be pushed out of the fight.")]
+    public bool knockbackReturn = true;
 
     [Header("Debug")]
     [Tooltip("Print distance and attack state to the console once a second.")]
@@ -107,7 +124,9 @@ public class EnemyScript : MonoBehaviour
         ApplyVariations();
 
         if (snapToGroundOnSpawn) SnapToGround();
+
         if (autoAttackRange) FitAttackRange();
+        else attackRange += eliteReachBonus;
 
         MaxHealth = Mathf.Max(1, health);
     }
@@ -127,7 +146,7 @@ public class EnemyScript : MonoBehaviour
         Collider2D body = BodyCollider();
         if (body == null) return;
 
-        attackRange = body.bounds.extents.x + reachPadding;
+        attackRange = body.bounds.extents.x + reachPadding + eliteReachBonus;
 
         if (logCombat)
         {
@@ -211,7 +230,7 @@ public class EnemyScript : MonoBehaviour
                 + "  animController=" + (animController != null));
         }
 
-        if (distanceToPlayer <= attackRange && Time.time >= nextAttackTime)
+        if ((distanceToPlayer <= attackRange || swingWhenOutOfReach) && Time.time >= nextAttackTime)
         {
             if (playerScript != null)
             {
@@ -219,7 +238,7 @@ public class EnemyScript : MonoBehaviour
                 nextAttackTime = Time.time + (1f / attackSpeed);
             }
         }
-        else if (distanceToPlayer > attackRange)
+        else if (distanceToPlayer > attackRange && !knockingBack)
         {
 
             Vector3 direction = (playerTransform.position - transform.position).normalized;
@@ -301,6 +320,69 @@ public class EnemyScript : MonoBehaviour
         }
 
         if (animController != null) animController.PlayHurt();
+
+        if (ShouldKnockBack(amount)) StartCoroutine(Knockback());
+    }
+
+    private bool knockingBack = false;
+    private float nextKnockbackTime = 0f;
+
+    bool ShouldKnockBack(int amount)
+    {
+        if (knockbackDistance <= 0f || knockingBack) return false;
+        if (amount < knockbackMinDamage) return false;
+        if (Time.time < nextKnockbackTime) return false;
+        if (knockbackOnlyBetweenAttacks && animController != null && animController.IsSwinging) return false;
+
+        nextKnockbackTime = Time.time + knockbackCooldown;
+        return true;
+    }
+
+    IEnumerator Knockback()
+    {
+        if (playerTransform == null) yield break;
+
+        knockingBack = true;
+
+        float away = transform.position.x >= playerTransform.position.x ? 1f : -1f;
+        float homeX = transform.position.x;
+        float targetX = homeX + away * knockbackDistance;
+
+        yield return SlideTo(homeX, targetX, knockbackDuration);
+
+        if (knockbackReturn && !isDying)
+        {
+            yield return SlideTo(targetX, homeX, knockbackDuration * 1.6f);
+        }
+
+        knockingBack = false;
+    }
+
+    IEnumerator SlideTo(float from, float to, float duration)
+    {
+        if (duration <= 0f)
+        {
+            SetX(to);
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration && !isDying)
+        {
+            elapsed += Time.deltaTime;
+            float step = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+            SetX(Mathf.Lerp(from, to, step));
+            yield return null;
+        }
+
+        if (!isDying) SetX(to);
+    }
+
+    void SetX(float x)
+    {
+        Vector3 pos = transform.position;
+        pos.x = x;
+        transform.position = pos;
     }
 
     void Die()
@@ -410,18 +492,27 @@ public class EnemyScript : MonoBehaviour
     {
         DamageEventFired = true;
 
-        if (logCombat) Debug.Log(name + "  DealDamage fired, dist=" + HorizontalDistanceToPlayer().ToString("F2"));
-
-        if (playerTransform == null) return;
+        if (playerTransform == null)
+        {
+            if (logCombat) Debug.LogWarning(name + "  DealDamage fired but it never found Ragnar.");
+            return;
+        }
 
         float distanceToPlayer = HorizontalDistanceToPlayer();
+        int blow = Mathf.Max(1, Mathf.RoundToInt(damage * damageMultiplier));
 
-        if (distanceToPlayer <= attackRange)
+        if (logCombat)
         {
-            if (playerScript != null)
-            {
-                playerScript.TakeDamage(Mathf.Max(1, Mathf.RoundToInt(damage * damageMultiplier)));
-            }
+            Debug.Log(name + "  DealDamage fired  dist=" + distanceToPlayer.ToString("F2")
+                + "  range=" + attackRange.ToString("F2")
+                + "  inRange=" + (distanceToPlayer <= attackRange)
+                + "  blow=" + blow
+                + "  playerScript=" + (playerScript != null));
+        }
+
+        if (distanceToPlayer <= attackRange && playerScript != null)
+        {
+            playerScript.TakeDamage(blow);
         }
     }
 }

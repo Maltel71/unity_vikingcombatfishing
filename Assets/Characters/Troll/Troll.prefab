@@ -142,12 +142,24 @@ MonoBehaviour:
   maxSizeMultiplier: 1.2
   manager: {fileID: 0}
   isElite: 0
+  externalBehaviour: 0
   eliteHealthMultiplier: 1
   eliteDamageMultiplier: 1
   eliteSizeMultiplier: 1.6
   eliteSpeedMultiplier: 1.5
   eliteAttackSpeedMultiplier: 1
   eliteTint: {r: 1, g: 1, b: 1, a: 1}
+  eliteReachBonus: 0
+  autoAttackRange: 0
+  reachPadding: 1.8
+  snapToGroundOnSpawn: 1
+  knockbackDistance: 0.8
+  knockbackDuration: 0.12
+  knockbackOnlyBetweenAttacks: 0
+  knockbackMinDamage: 0
+  knockbackCooldown: 0.3
+  knockbackReturn: 1
+  logCombat: 0
   vanishOnPlayerDeath: 1
   vanishDelay: 1
   vanishFadeDuration: 1
@@ -245,8 +257,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationController
   walkState: Troll_Walk
   attackState: Troll_Attack
+  extraAttackStates: []
   deathState: Troll_Death
-  deathIdleState: Troll_Idle
+  deathIdleState: Troll_Death
+  hurtState: 
+  finisherState: 
+  finisherWhenSelfBelow: 0.35
+  finisherWhenPlayerBelow: 0.35
+  finisherChance: 0.6
+  finisherCooldown: 10
+  finisherDamageMultiplier: 2
+  logAnimation: 0
+  attackTimeout: 4
+  returnState: 
 --- !u!1001 &2861669358622059118
 PrefabInstance:
   m_ObjectHideFlags: 0

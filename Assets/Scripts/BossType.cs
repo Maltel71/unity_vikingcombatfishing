@@ -28,6 +28,10 @@ public class BossType
     [Tooltip("Where this boss appears. Leave empty to use the Boss Spawn Points list on the wave manager.")]
     public Transform spawnPoint;
 
+    [Header("Reach")]
+    [Tooltip("Extra world units this boss can strike from, on top of what its own collider gives.")]
+    public float extraReach = 0f;
+
     [Header("Look")]
     [Tooltip("Tint laid over the sprite so bosses sharing one model can still be told apart.")]
     public Color tint = Color.white;

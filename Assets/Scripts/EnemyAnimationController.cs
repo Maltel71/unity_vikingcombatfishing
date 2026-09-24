@@ -59,6 +59,8 @@ public class EnemyAnimationController : MonoBehaviour
 
     public bool SuppressDamage { get { return isReturning; } }
 
+    public bool IsSwinging { get { return isAttacking; } }
+
     public float CurrentAttackMultiplier
     {
         get
