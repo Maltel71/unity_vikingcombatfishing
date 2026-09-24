@@ -15,6 +15,9 @@ public class PlayerAnimationController : MonoBehaviour
     private const string DEATH_IDLE = "Ragnar_DeathIdleAnimate";
     private const string DANCE = "danceanimragnar";
 
+    [Tooltip("State name for the berserk swing. Leave empty to reuse the normal attack.")]
+    public string berserkState = "Berserk_Attack";
+
     private string currentState;
     private bool isPlayingAction = false;
 
@@ -94,6 +97,25 @@ public class PlayerAnimationController : MonoBehaviour
     public void PlayAttack()
     {
         ChangeAnimationState(ATTACK);
+        isPlayingAction = true;
+    }
+
+    public void PlayBerserk()
+    {
+        if (string.IsNullOrEmpty(berserkState))
+        {
+            PlayAttack();
+            return;
+        }
+
+        if (!animator.HasState(0, Animator.StringToHash(berserkState)))
+        {
+            Debug.LogWarning("Ragnar has no animator state called \"" + berserkState + "\". Using the normal attack.");
+            PlayAttack();
+            return;
+        }
+
+        ChangeAnimationState(berserkState);
         isPlayingAction = true;
     }
 

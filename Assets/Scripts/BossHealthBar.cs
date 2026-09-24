@@ -15,6 +15,8 @@ public class BossHealthBar : MonoBehaviour
     public TextMeshProUGUI healthLabel;
 
     [Header("Appearance")]
+    [Tooltip("Off: the fill keeps the colour you set on the Image, so your own artwork shows as drawn.")]
+    public bool tintFill = true;
     public Color healthyColor = new Color(0.780f, 0.294f, 0.243f, 1f);
     [Tooltip("Colour the bar fades to when the boss is close to death.")]
     public Color criticalColor = new Color(0.949f, 0.729f, 0.263f, 1f);
@@ -95,7 +97,11 @@ public class BossHealthBar : MonoBehaviour
         if (fillImage != null)
         {
             ApplyFill(shownFill);
-            fillImage.color = ratio <= criticalThreshold ? criticalColor : healthyColor;
+
+            if (tintFill)
+            {
+                fillImage.color = ratio <= criticalThreshold ? criticalColor : healthyColor;
+            }
         }
 
         if (showNumbers && healthLabel != null)

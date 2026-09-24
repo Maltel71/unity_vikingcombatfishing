@@ -78,6 +78,8 @@ public class EndlessWaveManager : MonoBehaviour
 
     [Header("UI")]
     public WaveAnnouncer waveAnnouncer;
+    [Tooltip("Shouted across the screen when a boss arrives. The boss's own name stays on the health bar. Leave empty to shout the name instead.")]
+    public string bossCallout = "BOSS FIGHT";
 
     [Header("Music")]
     [Tooltip("When combat music plays. BossOnly means boss fights only.")]
@@ -311,7 +313,9 @@ public class EndlessWaveManager : MonoBehaviour
 
         if (waveAnnouncer != null)
         {
-            waveAnnouncer.AnnounceWave(BuildAnnouncement(boss));
+            waveAnnouncer.AnnounceWave(string.IsNullOrEmpty(bossCallout)
+                ? BuildAnnouncement(boss)
+                : bossCallout);
             yield return new WaitForSeconds(2f);
         }
 

@@ -35,14 +35,15 @@ public class PlayerScript : MonoBehaviour
     public float maxHitPitch = 1.08f;
 
     [Header("Berserk Sound")]
-    [Tooltip("Pitch the normal swoosh is dropped to, so the berserk swing sounds heavier without a new clip.")]
-    [Range(0.3f, 1f)]
-    public float berserkPitch = 0.55f;
-    [Tooltip("Second layer played just after the first, slightly higher. 0 disables it.")]
+    [Tooltip("Drop a separate berserk clip here. Left empty, the normal swing and impact sounds are used, just louder.")]
+    public AudioClip berserkSound;
     [Range(0f, 1f)]
-    public float berserkLayerPitch = 0.8f;
-    [Tooltip("Delay between the two layers.")]
-    public float berserkLayerDelay = 0.06f;
+    public float berserkSoundVolume = 1f;
+    [Tooltip("How much louder the berserk swing is than a normal one.")]
+    [Range(1f, 3f)]
+    public float berserkVolumeBoost = 1.5f;
+    [Tooltip("Seconds into the berserk swing before the blow lands. Match it to the frame where the axe connects.")]
+    public float berserkHitDelay = 0.1f;
     private AudioSource audioSource;
 
     [Header("Visual Effects")]
@@ -188,7 +189,7 @@ public class PlayerScript : MonoBehaviour
     {
         if (cachedAnimController != null)
         {
-            cachedAnimController.PlayAttack();
+            cachedAnimController.PlayBerserk();
         }
 
         StartCoroutine(BerserkRoar());
@@ -199,11 +200,11 @@ public class PlayerScript : MonoBehaviour
 
         attackCollider.EnableCollider();
 
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(Mathf.Max(0f, berserkHitDelay));
 
         int hits = attackCollider.ActivateAttack(AttackPower * rage.damageMultiplier);
 
-        PlayImpact(hits, berserkPitch);
+        PlayImpact(hits, Random.Range(minHitPitch, maxHitPitch), BerserkVolume());
 
         yield return new WaitForSeconds(Mathf.Max(0.05f, rage.swingDuration));
 
@@ -217,23 +218,33 @@ public class PlayerScript : MonoBehaviour
 
     void PlayImpact(int hits, float pitch)
     {
+        PlayImpact(hits, pitch, attackSoundVolume);
+    }
+
+    void PlayImpact(int hits, float pitch, float volume)
+    {
         if (hits <= 0) return;
         if (enemyHitSound == null || audioSource == null) return;
 
-        PlayOnPlayer(enemyHitSound, attackSoundVolume, pitch);
+        PlayOnPlayer(enemyHitSound, volume, pitch);
     }
 
     IEnumerator BerserkRoar()
     {
-        if (swordSwooshSound == null || audioSource == null) yield break;
+        if (audioSource == null) yield break;
 
-        PlayDetached(swordSwooshSound, attackSoundVolume, berserkPitch);
+        if (berserkSound != null)
+        {
+            PlayDetached(berserkSound, berserkSoundVolume, 1f);
+            yield break;
+        }
 
-        if (berserkLayerPitch <= 0f) yield break;
+        PlayDetached(swordSwooshSound, BerserkVolume(), 1f);
+    }
 
-        yield return new WaitForSeconds(berserkLayerDelay);
-
-        PlayDetached(swordSwooshSound, attackSoundVolume * 0.7f, berserkLayerPitch);
+    float BerserkVolume()
+    {
+        return Mathf.Clamp01(attackSoundVolume * berserkVolumeBoost);
     }
 
     void PlayOnPlayer(AudioClip clip, float volume, float pitch)

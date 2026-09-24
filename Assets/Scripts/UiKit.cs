@@ -78,6 +78,7 @@ public static class UiKit
         tmp.color = color;
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.raycastTarget = false;
+        UppercaseUI.Apply(tmp);
         return tmp;
     }
 
@@ -209,6 +210,7 @@ public static class UiKit
     public static void SetText(TextMeshProUGUI label, string text)
     {
         if (label == null) return;
+        UppercaseUI.Apply(label);
         label.text = Fit(text, label.font);
     }
 
