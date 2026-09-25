@@ -22,15 +22,15 @@ public class FlyingFish : MonoBehaviour
     public AudioClip flySound;
     [Range(0f, 1f)]
     public float flyVolume = 0.45f;
-    [Tooltip("Shortest wait between buzzes from this fish.")]
+    [Tooltip("Shortest wait after the fish turns before the flies find it.")]
     public float minFlyInterval = 3f;
-    [Tooltip("Longest wait between buzzes from this fish.")]
+    [Tooltip("Longest wait after the fish turns before the flies find it.")]
     public float maxFlyInterval = 7f;
     [Range(0.5f, 2f)]
     public float minFlyPitch = 0.9f;
     [Range(0.5f, 2f)]
     public float maxFlyPitch = 1.2f;
-    [Tooltip("Shortest gap between buzzes from any rotten fish, so a pile of them does not swarm.")]
+    [Tooltip("Shortest gap between buzzes from any two rotten fish, so a pile of them does not swarm at once.")]
     public float sharedFlyGap = 1.5f;
 
     [Header("Rage")]
@@ -77,6 +77,7 @@ public class FlyingFish : MonoBehaviour
     private AudioSource audioSource;
     private float lastBounceSoundTime = 0f;
     private bool spoiled = false;
+    private bool buzzed = false;
     private bool rotting = false;
     private float spoilTime;
     private float nextFlyTime;
@@ -155,13 +156,17 @@ public class FlyingFish : MonoBehaviour
 
     void BuzzWhenDue()
     {
-        if (flySound == null || audioSource == null) return;
+        if (buzzed || flySound == null || audioSource == null) return;
         if (Time.time < nextFlyTime) return;
 
-        nextFlyTime = Time.time + Random.Range(minFlyInterval, maxFlyInterval);
+        if (Time.time < nextSharedFly)
+        {
+            nextFlyTime = Time.time + 0.25f;
+            return;
+        }
 
-        if (Time.time < nextSharedFly) return;
         nextSharedFly = Time.time + sharedFlyGap;
+        buzzed = true;
 
         audioSource.pitch = Random.Range(minFlyPitch, maxFlyPitch);
         audioSource.PlayOneShot(flySound, flyVolume);

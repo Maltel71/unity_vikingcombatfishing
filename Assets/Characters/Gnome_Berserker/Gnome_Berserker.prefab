@@ -9942,7 +9942,8 @@ MonoBehaviour:
   autoAttackRange: 0
   reachPadding: 1.6
   snapToGroundOnSpawn: 1
-  knockbackDistance: 0.25
+  swingWhenOutOfReach: 0
+  knockbackDistance: 1
   knockbackDuration: 0.15
   knockbackOnlyBetweenAttacks: 0
   knockbackMinDamage: 0
